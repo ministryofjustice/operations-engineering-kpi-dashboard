@@ -16,4 +16,3 @@ Date,Product,SKU,Quantity,Unit Type,Price Per Unit ($),Multiplier,Owner,Reposito
 2023-11-16,Actions,Compute - UBUNTU,500,minute,0.008,1.0,ministryofjustice,test-repo,johnsmith,.github/workflows/stale.yml,
 2023-11-17,Actions,Compute - UBUNTU,800,minute,0.008,1.0,ministryofjustice,test-repo,johnsmith,.github/workflows/stale.yml,
 2023-11-18,Actions,Compute - UBUNTU,700,minute,0.008,1.0,ministryofjustice,test-repo,johnsmith,.github/workflows/stale.yml,
-
