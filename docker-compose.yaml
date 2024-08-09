@@ -5,7 +5,8 @@ services:
     image: "kpi-dashboard"
     container_name: "kpi-dashboard"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
@@ -29,6 +30,11 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin
       - POSTGRES_DB=admin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - kpi-dashboard
 
