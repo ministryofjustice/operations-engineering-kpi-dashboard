@@ -74,8 +74,10 @@ class FigureService:
             markers=True,
             template="plotly_dark",
             )
-        fig_stubbed_sentry_trans_used.add_hline(y=967741, annotation_text="Max Daily Usage")
-        fig_stubbed_sentry_trans_used.add_hrect(y0=(967741 * 0.8), y1=967741, line_width=0, fillcolor="red", opacity=0.2, annotation_text="Alert Threshold")
+        fig_stubbed_sentry_trans_used.add_hline(
+            y=967741, annotation_text="Max Daily Usage")
+        fig_stubbed_sentry_trans_used.add_hrect(
+            y0=(967741 * 0.8), y1=967741, line_width=0, fillcolor="red", opacity=0.2, annotation_text="Alert Threshold")
 
         return fig_stubbed_sentry_trans_used
 
@@ -116,7 +118,9 @@ class FigureService:
             template="plotly_dark",
             hover_data=["Price Per Unit ($)"],
             )
-        fig_github_actions_quota_usage.add_hline(y=(40000 / 31), annotation_text="Max Daily Actions Usage Usage")
-        fig_github_actions_quota_usage.add_hrect(y0=((40000 / 31) * 0.8), y1=(40000 / 31), line_width=0, fillcolor="red", opacity=0.2, annotation_text="Actions Alert Threshold")
+        fig_github_actions_quota_usage.add_hline(
+            y=(40000 / 31), annotation_text="Max Daily Actions Usage Usage")
+        fig_github_actions_quota_usage.add_hrect(
+            y0=((40000 / 31) * 0.8), y1=(40000 / 31), line_width=0, fillcolor="red", opacity=0.2, annotation_text="Actions Alert Threshold")
         
         return fig_github_actions_quota_usage
