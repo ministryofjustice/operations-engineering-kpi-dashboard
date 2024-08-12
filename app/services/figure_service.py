@@ -123,17 +123,10 @@ class FigureService:
 
     def testing_support_stats(self):
         testing_support_stats = pd.read_csv("data/testing_support_stats.csv")
-
-        # df.groupby(df["date"].dt.strftime("%B"))["Revenue"].sum().sort_values()
-
         testing_support_stats = (
             testing_support_stats.groupby(by=["Date", "Type"])
             .size()
             .reset_index(name="Count")
-            # testing_support_stats['Date'] = pd.to_datetime(testing_support_stats['Date'])
-            # testing_support_stats.groupby(["Date"].dt.strftime("%B"))["Type"]
-            # .size()
-            # .reset_index(name="Count")
         )
 
         return px.line(
