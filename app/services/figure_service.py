@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+from datetime import date
 import plotly.express as px
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,28 @@ class FigureService:
             y="Count",
             color="Type",
             title="Request Type by Month",
+            template="plotly_dark",
+        )
+
+    def testing_support_stats_current_month(self):
+        month = date.today().month
+        test_current_month = pd.read_csv("data/testing_support_stats.csv")
+        test_current_month["Date"] = pd.to_datetime(
+            test_current_month["Date"], format="%Y-%m-%d"
+        )
+        test_current_month = test_current_month.loc[
+            test_current_month["Date"].dt.month == month
+        ]
+        test_current_month["Total"] = test_current_month.groupby("Date")[
+            "Type"
+        ].transform("size")
+
+        return px.bar(
+            test_current_month,
+            x="Date",
+            y="Type",
+            color="Type",
+            title="Current Month",
             template="plotly_dark",
         )
 

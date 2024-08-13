@@ -100,6 +100,14 @@ def create_dashboard(figure_service: FigureService):
                         "display": "inline-block",
                     },
                 ),
+                dcc.Graph(
+                    figure=figure_service.testing_support_stats_current_month(),
+                    style={
+                        "width": "100%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
             ],
             style={"padding": "0px", "margin": "0px", "background-color": "black"},
         )
