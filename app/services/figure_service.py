@@ -120,7 +120,9 @@ class FigureService:
             )
         fig_github_actions_quota_usage.add_hline(
             y=(40000 / 31), annotation_text="Max Daily Actions Usage Usage")
+
         fig_github_actions_quota_usage.add_hrect(
-            y0=((40000 / 31) * 0.8), y1=(40000 / 31), line_width=0, fillcolor="red", opacity=0.2, annotation_text="Actions Alert Threshold")
-        
+            y0=((40000 / 31) * 0.8), y1=(40000 / 31), line_width=0, fillcolor="red",
+            opacity=0.2, annotation_text="Actions Alert Threshold")
+
         return fig_github_actions_quota_usage
