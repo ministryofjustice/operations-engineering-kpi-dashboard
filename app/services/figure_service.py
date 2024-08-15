@@ -15,7 +15,7 @@ class FigureService:
             self.database_service.get_indicator("REPOSITORIES_WITH_STANDARDS_LABEL"), columns=["timestamp", "count"]
         ).sort_values(by="timestamp", ascending=True)
 
-        fig_no_of_repos_with_standard_label = px.line(
+        fig_number_of_repositories_with_standards_label = px.line(
             number_of_repos_with_standards_label_df,
             x="timestamp",
             y="count",
@@ -23,16 +23,16 @@ class FigureService:
             markers=True,
             template="plotly_dark",
         )
-        fig_no_of_repos_with_standard_label.add_hline(y=0)
+        fig_number_of_repositories_with_standards_label.add_hline(y=0)
 
-        return fig_no_of_repos_with_standard_label
+        return fig_number_of_repositories_with_standards_label
 
     def get_stubbed_number_of_repositories_with_standards_label_dashboard(self):
         number_of_repos_with_standards_label_df = pd.DataFrame(
             self.database_service.get_indicator("STUBBED_REPOSITORIES_WITH_STANDARDS_LABEL"), columns=["timestamp", "count"]
         ).sort_values(by="timestamp", ascending=True)
 
-        fig_stubbed_no_of_repos_with_standard_label = px.line(
+        fig_stubbed_number_of_repositories_with_standards_label = px.line(
             number_of_repos_with_standards_label_df,
             x="timestamp",
             y="count",
@@ -40,16 +40,16 @@ class FigureService:
             markers=True,
             template="plotly_dark",
         )
-        fig_stubbed_no_of_repos_with_standard_label.add_hline(y=0)
+        fig_stubbed_number_of_repositories_with_standards_label.add_hline(y=0)
 
-        return fig_stubbed_no_of_repos_with_standard_label
+        return fig_stubbed_number_of_repositories_with_standards_label
 
     def get_stubbed_number_of_repositories_archived_by_automation(self):
         number_of_repositories_archived_by_automation = pd.DataFrame(
             self.database_service.get_indicator("STUBBED_REPOSITORIES_ARCHIVED_BY_AUTOMATION"), columns=["timestamp", "count"]
         ).sort_values(by="timestamp", ascending=True)
 
-        fig_get_stubbed_no_of_repos_archived_by_automation = px.line(
+        fig_stubbed_number_of_repositories_archived_by_automation = px.line(
             number_of_repositories_archived_by_automation,
             x="timestamp",
             y="count",
@@ -57,16 +57,16 @@ class FigureService:
             markers=True,
             template="plotly_dark",
         )
-        fig_get_stubbed_no_of_repos_archived_by_automation.add_hline(y=0)
+        fig_stubbed_number_of_repositories_archived_by_automation.add_hline(y=0)
 
-        return fig_get_stubbed_no_of_repos_archived_by_automation
+        return fig_stubbed_number_of_repositories_archived_by_automation
 
     def get_stubbed_sentry_transactions_used(self):
         sentry_transaction_quota_consumed = pd.DataFrame(
             self.database_service.get_indicator("STUBBED_SENTRY_DAILY_TRANSACTION_USAGE"), columns=["timestamp", "count"]
         ).sort_values(by="timestamp", ascending=True)
 
-        fig_stubbed_sentry_trans_used = px.line(
+        fig_stubbed_sentry_transactions_used = px.line(
             sentry_transaction_quota_consumed,
             x="timestamp",
             y="count",
@@ -74,12 +74,12 @@ class FigureService:
             markers=True,
             template="plotly_dark",
             )
-        fig_stubbed_sentry_trans_used.add_hline(
+        fig_stubbed_sentry_transactions_used.add_hline(
             y=967741, annotation_text="Max Daily Usage")
-        fig_stubbed_sentry_trans_used.add_hrect(
+        fig_stubbed_sentry_transactions_used.add_hrect(
             y0=(967741 * 0.8), y1=967741, line_width=0, fillcolor="red", opacity=0.2, annotation_text="Alert Threshold")
 
-        return fig_stubbed_sentry_trans_used
+        return fig_stubbed_sentry_transactions_used
 
     def get_support_stats(self):
         support_stats_csv = pd.read_csv("data/support-stats.csv")
