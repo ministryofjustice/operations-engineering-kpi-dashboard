@@ -1,0 +1,8 @@
+app:
+  ingress:
+    host: "kpi-dashboard.cloud-platform.service.justice.gov.uk"
+
+  deployment:
+    replicaCount: 1
+    env:
+      LOGGING_LEVEL: INFO
