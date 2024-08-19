@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+import datetime
 from datetime import date
 import plotly.express as px
 
@@ -122,42 +123,42 @@ class FigureService:
             template="plotly_dark",
         )
 
-    def testing_support_stats(self):
-        testing_support_stats = pd.read_csv("data/testing_support_stats.csv")
-        testing_support_stats = (
-            testing_support_stats.groupby(by=["Date", "Type"])
+    def get_support_stats_all(self):
+        support_requests_all = pd.read_csv("data/testing_support_stats.csv")
+        support_requests_all = (
+            support_requests_all.groupby(by=["Date", "Type"])
             .size()
             .reset_index(name="Count")
         )
 
         return px.line(
-            testing_support_stats,
+            support_requests_all,
             x="Date",
             y="Count",
             color="Type",
-            title="Request Type by Month",
+            title="Support Requests by Type - Year to Date",
             template="plotly_dark",
         )
 
-    def testing_support_stats_current_month(self):
+    def get_support_stats_current_month(self):
         month = date.today().month
-        test_current_month = pd.read_csv("data/testing_support_stats.csv")
-        test_current_month["Date"] = pd.to_datetime(
-            test_current_month["Date"], format="%Y-%m-%d"
+        support_requests_current_month = pd.read_csv("data/support_request_stats.csv")
+        support_requests_current_month["Date"] = pd.to_datetime(
+            support_requests_current_month["Date"], format="%Y-%m-%d"
         )
-        test_current_month = test_current_month.loc[
-            test_current_month["Date"].dt.month == month
+        support_requests_current_month = support_requests_current_month.loc[
+            support_requests_current_month["Date"].dt.month == month
         ]
-        test_current_month["Total"] = test_current_month.groupby("Date")[
-            "Type"
-        ].transform("size")
+        support_requests_current_month["Total"] = (
+            support_requests_current_month.groupby("Date")["Type"].transform("size")
+        )
 
         return px.bar(
-            test_current_month,
+            support_requests_current_month,
             x="Date",
             y="Type",
             color="Type",
-            title="Current Month",
+            title="Support Requests by Type - Current Month",
             template="plotly_dark",
         )
 
