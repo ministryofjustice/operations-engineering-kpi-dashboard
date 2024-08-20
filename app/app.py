@@ -1,6 +1,7 @@
 import logging
 
 from dash import Dash, dcc, html
+from dash_auth import OIDCAuth
 from flask import Flask
 
 from app.config.app_config import app_config
@@ -33,6 +34,14 @@ def create_app() -> Flask:
     app.title = "⚙️ OE - KPI Dashboard"
     app.layout = create_dashboard(server.figure_service)
 
+    auth = OIDCAuth(app, secret_key=app_config.flask.app_secret_key)
+    auth.register_provider(
+        "idp",
+        token_endpoint_auth_method="client_secret_post",
+        client_id=app_config.auth0.client_id,
+        client_secret=app_config.auth0.client_secret,
+        server_metadata_url=f"https://{app_config.auth0.domain}/.well-known/openid-configuration",
+    )
     logger.info("Running app...")
 
     return app.server
