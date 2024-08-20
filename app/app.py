@@ -34,7 +34,12 @@ def create_app() -> Flask:
     app.title = "⚙️ OE - KPI Dashboard"
     app.layout = create_dashboard(server.figure_service)
 
-    auth = OIDCAuth(app, secret_key=app_config.flask.app_secret_key)
+    auth = OIDCAuth(
+        app,
+        secret_key=app_config.flask.app_secret_key,
+        force_https_callback=True,
+        secure_session=True,
+    )
     auth.register_provider(
         "idp",
         token_endpoint_auth_method="client_secret_post",
