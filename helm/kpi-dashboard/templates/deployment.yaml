@@ -20,6 +20,12 @@ spec:
           env:
             - name: API_KEY 
               value: {{ .Values.app.deployment.env.API_KEY | quote }}
+            - name: AUTH0_DOMAIN
+              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote}}
+            - name: AUTH0_CLIENT_ID
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote}}
+            - name: AUTH0_CLIENT_SECRET
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote}}
             - name: POSTGRES_USER
               value: {{ .Values.app.deployment.env.POSTGRES_USER | quote }}
             - name: POSTGRES_PASSWORD
