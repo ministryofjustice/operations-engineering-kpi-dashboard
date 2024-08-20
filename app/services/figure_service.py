@@ -137,7 +137,7 @@ class FigureService:
         return fig_support_stats
 
     def get_support_stats_year_to_date(self):
-        support_requests_all = pd.read_csv("data/testing_support_stats.csv")
+        support_requests_all = pd.read_csv("data/support_request_stats.csv")
         support_requests_all = (
             support_requests_all.groupby(by=["Date", "Type"])
             .size()
