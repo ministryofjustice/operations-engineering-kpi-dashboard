@@ -93,7 +93,7 @@ def create_dashboard(figure_service: FigureService):
                     },
                 ),
                 dcc.Graph(
-                    figure=figure_service.get_support_stats_all(),
+                    figure=figure_service.get_support_stats_year_to_date(),
                     style={
                         "width": "100%",
                         "height": "500px",
