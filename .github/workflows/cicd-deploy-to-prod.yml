@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 env:
+  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+
   KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
   KUBE_NAMESPACE: ${{ secrets.PROD_KUBE_NAMESPACE }}
   KUBE_CERT: ${{ secrets.PROD_KUBE_CERT }}
@@ -70,6 +74,9 @@ jobs:
             --namespace ${KUBE_NAMESPACE} \
             --values=helm/kpi-dashboard/values-prod.yaml \
             --set app.deployment.env.API_KEY=${API_KEY} \
+            --set app.deployment.env.AUTH0_DOMAIN=${AUTH0_DOMAIN} \
+            --set app.deployment.env.AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID} \
+            --set app.deployment.env.AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET} \
             --set app.deployment.env.POSTGRES_USER=${POSTGRES_USER} \
             --set app.deployment.env.POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
             --set app.deployment.env.POSTGRES_DB=${POSTGRES_DB} \
