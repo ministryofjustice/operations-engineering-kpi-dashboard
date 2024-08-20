@@ -10,6 +10,7 @@ COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 COPY app app
 COPY example-data data
+COPY data/production production
 
 RUN pip3 install --no-cache-dir pipenv
 RUN pipenv install --system --deploy --ignore-pipfile

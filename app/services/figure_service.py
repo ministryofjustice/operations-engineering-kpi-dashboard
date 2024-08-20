@@ -137,7 +137,7 @@ class FigureService:
         return fig_support_stats
 
     def get_support_stats_year_to_date(self):
-        support_requests_all = pd.read_csv("data/support_request_stats.csv")
+        support_requests_all = pd.read_csv("production/support_request_stats.csv")
         support_requests_all = (
             support_requests_all.groupby(by=["Date", "Type"])
             .size()
@@ -157,7 +157,9 @@ class FigureService:
 
     def get_support_stats_current_month(self):
         month = date.today().month
-        support_requests_current_month = pd.read_csv("data/support_request_stats.csv")
+        support_requests_current_month = pd.read_csv(
+            "production/support_request_stats.csv"
+        )
         support_requests_current_month["Date"] = pd.to_datetime(
             support_requests_current_month["Date"], format="%Y-%m-%d"
         )
