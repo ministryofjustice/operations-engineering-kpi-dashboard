@@ -85,6 +85,7 @@ class FigureService:
             title="👀 Sentry Transactions Used",
             markers=True,
             template="plotly_dark",
+
         )
         fig_stubbed_sentry_transactions_used.add_hline(
             y=967741, annotation_text="Max Daily Usage"
@@ -97,6 +98,7 @@ class FigureService:
             opacity=0.2,
             annotation_text="Alert Threshold",
         )
+
         return fig_stubbed_sentry_transactions_used
 
     def get_support_stats(self):
@@ -178,6 +180,7 @@ class FigureService:
 
         return fig_support_stats_current_month
 
+
     def get_github_actions_quota_usage(self):
         github_usage_csv = pd.read_csv(
             "data/github_actions_private_and_internal.csv"
@@ -196,6 +199,7 @@ class FigureService:
             trendline="ols",
             template="plotly_dark",
             hover_data=["Price Per Unit ($)"],
+g
         )
         fig_github_actions_quota_usage.add_hline(
             y=(40000 / 31), annotation_text="Max Daily Actions Usage Usage"
@@ -210,3 +214,4 @@ class FigureService:
         )
 
         return fig_github_actions_quota_usage
+
