@@ -1,6 +1,6 @@
 app:
   ingress:
-    host: "kpi-dashboard-poc.cloud-platform.service.justice.gov.uk"
+    host: "kpi-dashboard.cloud-platform.service.justice.gov.uk"
 
   deployment:
     replicaCount: 1

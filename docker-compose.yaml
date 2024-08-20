@@ -4,8 +4,6 @@ services:
     build: .
     image: "kpi-dashboard"
     container_name: "kpi-dashboard"
-    depends_on:
-      - postgres
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
@@ -17,6 +15,10 @@ services:
       API_KEY: test
     ports:
       - "4567:4567"
+    depends_on:
+      postgres:
+        condition: service_started
+        restart: true
     networks:
       - kpi-dashboard
 
@@ -29,6 +31,11 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_USER=admin
       - POSTGRES_DB=admin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - kpi-dashboard
 

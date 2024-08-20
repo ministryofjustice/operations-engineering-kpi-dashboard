@@ -25,6 +25,9 @@ app_config = SimpleNamespace(
         client_id=__get_env_var("AUTH0_CLIENT_ID"),
         client_secret=__get_env_var("AUTH0_CLIENT_SECRET"),
     ),
+    flask=SimpleNamespace(
+        app_secret_key=__get_env_var("APP_SECRET_KEY"),
+    ),
     logging_level=__get_env_var("LOGGING_LEVEL"),
     postgres=SimpleNamespace(
         user=__get_env_var("POSTGRES_USER"),

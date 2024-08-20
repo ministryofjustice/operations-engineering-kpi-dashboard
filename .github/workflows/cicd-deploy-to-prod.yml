@@ -1,4 +1,4 @@
-name: "♻️ Deploy to PoC Namespace"
+name: "♻️ Deploy to Production Namespace"
 
 on:
   workflow_dispatch:
@@ -6,21 +6,21 @@ on:
     branches: [main]
 env:
   KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
-  KUBE_NAMESPACE: ${{ secrets.POC_KUBE_NAMESPACE }}
-  KUBE_CERT: ${{ secrets.POC_KUBE_CERT }}
-  KUBE_TOKEN: ${{ secrets.POC_KUBE_TOKEN }}
+  KUBE_NAMESPACE: ${{ secrets.PROD_KUBE_NAMESPACE }}
+  KUBE_CERT: ${{ secrets.PROD_KUBE_CERT }}
+  KUBE_TOKEN: ${{ secrets.PROD_KUBE_TOKEN }}
 
   IMAGE_TAG: ${{ github.sha }}
-  ECR_REGISTRY: ${{ vars.DEVELOPMENT_ECR_REGISTRY }}
-  ECR_REPOSITORY: ${{ vars.DEVELOPMENT_ECR_REPOSITORY }}
+  ECR_REGISTRY: ${{ vars.PRODUCTION_ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ vars.PRODUCTION_ECR_REPOSITORY }}
 
-  API_KEY: ${{ secrets.POC_API_KEY }}
+  API_KEY: ${{ secrets.PROD_API_KEY }}
 
-  POSTGRES_USER: ${{secrets.POC_POSTGRES_USER}}
-  POSTGRES_PASSWORD: ${{secrets.POC_POSTGRES_PASSWORD}}
-  POSTGRES_DB: ${{secrets.POC_POSTGRES_DB}}
-  POSTGRES_HOST: ${{secrets.POC_POSTGRES_HOST}}
-  POSTGRES_PORT: ${{secrets.POC_POSTGRES_PORT}}
+  POSTGRES_USER: ${{secrets.PROD_POSTGRES_USER}}
+  POSTGRES_PASSWORD: ${{secrets.PROD_POSTGRES_PASSWORD}}
+  POSTGRES_DB: ${{secrets.PROD_POSTGRES_DB}}
+  POSTGRES_HOST: ${{secrets.PROD_POSTGRES_HOST}}
+  POSTGRES_PORT: ${{secrets.PROD_POSTGRES_PORT}}
 
 jobs:
   build-push:
@@ -33,8 +33,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.DEVELOPMENT_ECR_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.DEVELOPMENT_ECR_REGION }}
+          role-to-assume: ${{ secrets.PRODUCTION_ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.PRODUCTION_ECR_REGION }}
 
       - uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
@@ -42,7 +42,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-  deploy-to-poc:
+  deploy-to-prod:
     needs: build-push
     runs-on: ubuntu-latest
     container: alpine/k8s:1.23.17
@@ -59,7 +59,7 @@ jobs:
           kubectl config get-contexts
           kubectl config use-context ${KUBE_CLUSTER}
 
-      - name: Deploy helm chart to PoC
+      - name: Deploy helm chart to Production
         run: |
           helm upgrade kpi-dashboard \
             helm/kpi-dashboard \
@@ -68,7 +68,7 @@ jobs:
             --wait \
             --timeout 10m \
             --namespace ${KUBE_NAMESPACE} \
-            --values=helm/kpi-dashboard/values-poc.yaml \
+            --values=helm/kpi-dashboard/values-prod.yaml \
             --set app.deployment.env.API_KEY=${API_KEY} \
             --set app.deployment.env.POSTGRES_USER=${POSTGRES_USER} \
             --set app.deployment.env.POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
