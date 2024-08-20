@@ -26,6 +26,8 @@ spec:
               value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote}}
             - name: AUTH0_CLIENT_SECRET
               value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote}}
+            - name: APP_SECRET_KEY
+              value: {{ .Values.app.deployment.env.APP_SECRET_KEY | quote}}
             - name: POSTGRES_USER
               value: {{ .Values.app.deployment.env.POSTGRES_USER | quote }}
             - name: POSTGRES_PASSWORD
