@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 env:
   AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
   AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
