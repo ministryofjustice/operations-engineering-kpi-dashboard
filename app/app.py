@@ -41,7 +41,7 @@ def create_app() -> Flask:
             force_https_callback=True,
             secure_session=True,
         )
-        add_public_routes(app, public_routes=["/api"])
+        add_public_routes(app, routes=["/api"])
         auth.register_provider(
             "idp",
             token_endpoint_auth_method="client_secret_post",
