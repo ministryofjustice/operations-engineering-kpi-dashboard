@@ -34,19 +34,20 @@ def create_app() -> Flask:
     app.title = "⚙️ OE - KPI Dashboard"
     app.layout = create_dashboard(server.figure_service)
 
-    auth = OIDCAuth(
-        app,
-        secret_key=app_config.flask.app_secret_key,
-        force_https_callback=True,
-        secure_session=True,
-    )
-    auth.register_provider(
-        "idp",
-        token_endpoint_auth_method="client_secret_post",
-        client_id=app_config.auth0.client_id,
-        client_secret=app_config.auth0.client_secret,
-        server_metadata_url=f"https://{app_config.auth0.domain}/.well-known/openid-configuration",
-    )
+    if app_config.auth_enabled:
+        auth = OIDCAuth(
+            app,
+            secret_key=app_config.flask.app_secret_key,
+            force_https_callback=True,
+            secure_session=True,
+        )
+        auth.register_provider(
+            "idp",
+            token_endpoint_auth_method="client_secret_post",
+            client_id=app_config.auth0.client_id,
+            client_secret=app_config.auth0.client_secret,
+            server_metadata_url=f"https://{app_config.auth0.domain}/.well-known/openid-configuration",
+        )
     logger.info("Running app...")
 
     return app.server
@@ -77,6 +78,31 @@ def create_dashboard(figure_service: FigureService):
                     figure=figure_service.get_support_stats_current_month(),
                     style={
                         "width": "100%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                html.H2("Sentry Quota"),
+                dcc.Graph(
+                    figure=figure_service.get_sentry_transactions_usage(),
+                    style={
+                        "width": "100%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                dcc.Graph(
+                    figure=figure_service.get_sentry_errors_usage(),
+                    style={
+                        "width": "50%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                dcc.Graph(
+                    figure=figure_service.get_sentry_replays_usage(),
+                    style={
+                        "width": "50%",
                         "height": "500px",
                         "display": "inline-block",
                     },

@@ -5,6 +5,7 @@ services:
     image: "kpi-dashboard"
     container_name: "kpi-dashboard"
     environment:
+      AUTH_ENABLED: false
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
       POSTGRES_DB: admin
