@@ -213,3 +213,85 @@ class FigureService:
         )
 
         return fig_github_actions_quota_usage
+
+    def get_sentry_transactions_usage(self):
+        sentry_transaction_quota_consumed = pd.DataFrame(
+            self.database_service.get_indicator(
+                "SENTRY_TRANSACTIONS_USED_OVER_PAST_DAY"
+            ),
+            columns=["timestamp", "count"],
+        ).sort_values(by="timestamp", ascending=True)
+
+        fig_stubbed_sentry_transactions_used = px.line(
+            sentry_transaction_quota_consumed,
+            x="timestamp",
+            y="count",
+            title="Sentry Transactions Used",
+            markers=True,
+            template="plotly_dark",
+        )
+        fig_stubbed_sentry_transactions_used.add_hline(
+            y=967741, annotation_text="Max Daily Usage"
+        )
+        fig_stubbed_sentry_transactions_used.add_hrect(
+            y0=(967741 * 0.8),
+            y1=967741,
+            line_width=0,
+            fillcolor="red",
+            opacity=0.2,
+            annotation_text="Alert Threshold",
+        )
+
+        return fig_stubbed_sentry_transactions_used
+
+    def get_sentry_errors_usage(self):
+        sentry_errors_quota_consumed = pd.DataFrame(
+            self.database_service.get_indicator("SENTRY_ERRORS_USED_OVER_PAST_DAY"),
+            columns=["timestamp", "count"],
+        ).sort_values(by="timestamp", ascending=True)
+
+        fig_sentry_erros_used = px.line(
+            sentry_errors_quota_consumed,
+            x="timestamp",
+            y="count",
+            title="Errors Used",
+            markers=True,
+            template="plotly_dark",
+        )
+        fig_sentry_erros_used.add_hline(y=129032, annotation_text="Max Daily Usage")
+        fig_sentry_erros_used.add_hrect(
+            y0=(129032 * 0.8),
+            y1=129032,
+            line_width=0,
+            fillcolor="red",
+            opacity=0.2,
+            annotation_text="Alert Threshold",
+        )
+
+        return fig_sentry_erros_used
+
+    def get_sentry_replays_usage(self):
+        sentry_replays_quota_consumed = pd.DataFrame(
+            self.database_service.get_indicator("SENTRY_REPLAYS_USED_OVER_PAST_DAY"),
+            columns=["timestamp", "count"],
+        ).sort_values(by="timestamp", ascending=True)
+
+        fig_sentry_replays_used = px.line(
+            sentry_replays_quota_consumed,
+            x="timestamp",
+            y="count",
+            title="Replays Used",
+            markers=True,
+            template="plotly_dark",
+        )
+        fig_sentry_replays_used.add_hline(y=25806, annotation_text="Max Daily Usage")
+        fig_sentry_replays_used.add_hrect(
+            y0=(25806 * 0.8),
+            y1=25806,
+            line_width=0,
+            fillcolor="red",
+            opacity=0.2,
+            annotation_text="Alert Threshold",
+        )
+
+        return fig_sentry_replays_used
