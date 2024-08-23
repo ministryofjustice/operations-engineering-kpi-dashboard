@@ -22,10 +22,13 @@ class DatabaseService:
             cur = conn.cursor()
             cur.execute(sql, values)
             data = None
-            try:
-                data = cur.fetchall()
-            except Exception as e:
-                logging.error(e)
+            # Only fetch results if the query return rows
+            if cur.description is not None:
+                try:
+                    data = cur.fetchall()
+                except Exception as e:
+                    logging.error(e)
+            
             conn.commit()
             return data
 
