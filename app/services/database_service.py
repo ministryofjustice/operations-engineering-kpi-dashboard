@@ -21,8 +21,7 @@ class DatabaseService:
             logging.info("Executing query...")
             cur = conn.cursor()
             cur.execute(sql, values)
-            data = None
-            # Only fetch results if the query return rows
+            data = None 
             if cur.description is not None:
                 try:
                     data = cur.fetchall()
