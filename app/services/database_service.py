@@ -21,11 +21,13 @@ class DatabaseService:
             logging.info("Executing query...")
             cur = conn.cursor()
             cur.execute(sql, values)
-            data = None
-            try:
-                data = cur.fetchall()
-            except Exception as e:
-                logging.error(e)
+            data = None 
+            if cur.description is not None:
+                try:
+                    data = cur.fetchall()
+                except Exception as e:
+                    logging.error(e)
+            
             conn.commit()
             return data
 
