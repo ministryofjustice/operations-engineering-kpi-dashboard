@@ -181,38 +181,40 @@ class FigureService:
 
         return fig_support_stats_current_month
 
-    def get_github_actions_quota_usage(self):
-        github_usage_csv = pd.read_csv(
-            "data/github_actions_private_and_internal.csv"
-        ).sort_values(by="Date", ascending=True)
-        github_actions = github_usage_csv[github_usage_csv["Product"] == "Actions"]
-        github_actions_summed = github_actions.groupby(by="Date", as_index=False).agg(
-            "sum"
-        )
-        github_actions_summed["Date"] = pd.to_datetime(github_actions_summed["Date"])
+    def get_github_actions_quota_usage_cumulative(self):
 
-        fig_github_actions_quota_usage = px.scatter(
-            github_actions_summed,
-            x="Date",
-            y="Quantity",
-            title="💥 GitHub Quota Usage",
-            trendline="ols",
+        github_actions_quota_usage_cumulative = pd.DataFrame(
+            self.database_service.get_indicator(
+                "ENTERPRISE_GITHUB_ACTIONS_QUOTA_USAGE"
+            ),
+            columns=["timestamp", "count"],
+        ).sort_values(by="timestamp", ascending=True)
+
+        fig_github_actions_quota_usage_cumulative = px.line(
+            github_actions_quota_usage_cumulative,
+            x="timestamp",
+            y="count",
+            title="Cumulative Github Actions Usage",
+            markers=True,
             template="plotly_dark",
-            hover_data=["Price Per Unit ($)"],
         )
-        fig_github_actions_quota_usage.add_hline(
-            y=(40000 / 31), annotation_text="Max Daily Actions Usage Usage"
-        )
-        fig_github_actions_quota_usage.add_hrect(
-            y0=((40000 / 31) * 0.8),
-            y1=(40000 / 31),
-            line_width=0,
-            fillcolor="red",
-            opacity=0.2,
-            annotation_text="Actions Alert Threshold",
-        )
+        # Add quota reset lines
+        start_date = github_actions_quota_usage_cumulative['timestamp'].min().date()
+        end_date = github_actions_quota_usage_cumulative['timestamp'].max().date()
+        max_y = github_actions_quota_usage_cumulative['count'].max()
 
-        return fig_github_actions_quota_usage
+        start_days_quota = pd.date_range(start=start_date, end=end_date, freq='MS')
+
+        for date in start_days_quota:
+            fig_github_actions_quota_usage_cumulative.add_vline(
+            x=date,
+            line_dash="dash",
+            line_color="red"
+            )
+            fig_github_actions_quota_usage_cumulative.add_annotation(
+                x=date, y=max_y,text="Quota Reset", ax=-25)
+
+        return fig_github_actions_quota_usage_cumulative
 
     def get_sentry_transactions_usage(self):
         sentry_transaction_quota_consumed = pd.DataFrame(
