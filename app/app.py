@@ -142,7 +142,7 @@ def create_dashboard(figure_service: FigureService):
                     },
                 ),
                 dcc.Graph(
-                    figure=figure_service.get_github_actions_quota_usage(),
+                    figure=figure_service.get_github_actions_quota_usage_cumulative(),
                     style={
                         "width": "100%",
                         "height": "500px",
