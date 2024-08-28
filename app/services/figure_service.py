@@ -197,12 +197,14 @@ class FigureService:
             markers=True,
             template="plotly_dark",
         )
-
         fig_github_actions_quota_usage_cumulative.add_hline(
             y=50000,
             line=dict(color="red", dash="dash"),
             annotation_text="Minutes allowance",
             annotation_position="top right"
+        )
+        fig_github_actions_quota_usage_cumulative.update_layout(
+            yaxis_title="Min used"
         )
 
         # Add quota reset lines
@@ -219,16 +221,18 @@ class FigureService:
                 line_color="white"
                 )
             fig_github_actions_quota_usage_cumulative.add_annotation(
-                x=date, y=max_y, text="Quota Reset", ax=-25)
+                x=day, y=max_y, text="Quota Reset", ax=-25)
 
         # Daily gha consumption graph
-        github_actions_quota_usage_cumulative['Month'] = github_actions_quota_usage_cumulative['timestamp'].dt.to_period('M')
-        github_actions_quota_usage_cumulative['Daily_minutes'] = github_actions_quota_usage_cumulative.groupby('Month')['count'].diff()
+        github_actions_quota_usage_daily = github_actions_quota_usage_cumulative.copy()
+        github_actions_quota_usage_daily['Month'] = github_actions_quota_usage_daily['timestamp'].dt.to_period('M')
+        github_actions_quota_usage_daily['Daily_minutes'] = github_actions_quota_usage_daily.groupby('Month')['count'].diff()
+        github_actions_quota_usage_daily['Date'] = (github_actions_quota_usage_daily['timestamp'] - timedelta(days=1)).dt.date
 
-        github_actions_quota_usage_cumulative['Date'] = (github_actions_quota_usage_cumulative['timestamp'] - timedelta(days=1)).dt.date
+        github_actions_quota_usage_daily = github_actions_quota_usage_daily.dropna()
 
         fig_github_actions_quota_usage_daily = px.bar(
-            github_actions_quota_usage_cumulative,
+            github_actions_quota_usage_daily,
             x="Date",
             y="Daily_minutes",
             title="Daily Github Actions Usage",
@@ -239,7 +243,7 @@ class FigureService:
         )
 
         fig_github_actions_quota_usage_daily.add_hline(
-            y=github_actions_quota_usage_cumulative['Daily_minutes'].median(),
+            y=github_actions_quota_usage_daily['Daily_minutes'].median(),
             line=dict(color="red", dash="dash"),  # Custom line style
             annotation_text="Median",
             annotation_position="top right"
