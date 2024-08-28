@@ -111,7 +111,15 @@ def create_dashboard(figure_service: FigureService):
                 
                 html.H2("Github Actions Quota"),
                 dcc.Graph(
-                    figure=figure_service.get_github_actions_quota_usage_cumulative(),
+                    figure=figure_service.get_github_actions_quota_usage_cumulative()[0],
+                    style={
+                        "width": "100%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                dcc.Graph(
+                    figure=figure_service.get_github_actions_quota_usage_cumulative()[1],
                     style={
                         "width": "100%",
                         "height": "500px",
