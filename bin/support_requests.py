@@ -3,19 +3,19 @@ from botocore.client import BaseClient
 from botocore.exceptions import ClientError, NoCredentialsError
 import boto3
 import os
+from datetime import datetime
 from mojap_metadata import Metadata
 from mojap_metadata.converters.glue_converter import GlueConverter
 
-table_names = "support_requests"
+timestamp = datetime.now().strftime("%Y%m%d%H%M")
 
-# [f for f in os.listdir("./data") if os.path.isdir(os.path.join("./data", f))]
+table_name = "support_request_stats"
 
 read_paths = "/data/production"
 
 # [f"./data{tn}/{tn}.csv" for tn in table_names]
 
-subdir = "production"
-write_paths = [f"{subdir}/data/{tn}/{tn}.csv" for tn in table_names]
+write_paths = [f"/data/production/{timestamp}/{tn}.csv" for tn in table_name]
 
 # Set up AWS clients
 s3_client = boto3.client("s3")
@@ -28,8 +28,8 @@ db_name = "support_request_data"
 
 # set data location to the dir containing the sub dirs of release versions
 # so that update_table will see all the new versions when it runs
-data_locations = [f"s3://{bucket}/{subdir}/data/{tn}/" for tn in table_names]
-meta_paths = [f"./data{tn}/{tn}.json" for tn in table_names]
+data_locations = [f"s3://{bucket}/data/production/{timestamp}/" for tn in table_name]
+meta_paths = [f"./data{timestamp}/{tn}.json" for tn in table_name]
 
 
 # Function to write data to bucket
