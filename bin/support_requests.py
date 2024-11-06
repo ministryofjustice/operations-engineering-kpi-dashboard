@@ -8,14 +8,16 @@ from mojap_metadata import Metadata
 from mojap_metadata.converters.glue_converter import GlueConverter
 
 timestamp = datetime.now().strftime("%Y%m%d%H%M")
+print(timestamp)
 
 table_name = "support_request_stats"
 
-read_paths = "/data/production"
+read_path = "/data/production"
 
 # [f"./data{tn}/{tn}.csv" for tn in table_names]
 
-write_paths = [f"/data/production/{timestamp}/{tn}.csv" for tn in table_name]
+write_path = [f"/data/production/{timestamp}/support_request_stats.csv"]
+print(write_path)
 
 # Set up AWS clients
 s3_client = boto3.client("s3")
@@ -23,13 +25,15 @@ glue_client = boto3.client("glue")
 
 # Set up for creating database and tables
 # destination bucket, database name, data locations, metadata
-bucket = "<not yet defined>"
+bucket = "operations-engineering-support-request-stats"
 db_name = "support_request_data"
 
 # set data location to the dir containing the sub dirs of release versions
 # so that update_table will see all the new versions when it runs
-data_locations = [f"s3://{bucket}/data/production/{timestamp}/" for tn in table_name]
-meta_paths = [f"./data{timestamp}/{tn}.json" for tn in table_name]
+data_locations = [f"s3://{bucket}/data/production/{timestamp}/"]
+# for tn in table_name]
+meta_paths = [f"./data/{timestamp}.json"]
+# for tn in table_name]
 
 
 # Function to write data to bucket
@@ -81,7 +85,7 @@ def does_table_exist(client, database_name, table_name):
 
 
 # Upload files to bucket
-for rp, wp in zip(read_paths, write_paths):
+for rp, wp in zip(read_path, write_path):
     upload_file(file_name=rp, bucket=bucket, object_name=wp)
 
 # Create database if it does not exist
