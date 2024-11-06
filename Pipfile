@@ -13,6 +13,8 @@ plotly = "==5.21.0"
 dash = "==2.16.1"
 pandas = "==2.2.2"
 statsmodels = "==0.14.1"
+boto3 = "*"
+mojap-metadata = "*"
 
 [requires]
 python_version = "3.12"
