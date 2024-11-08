@@ -28,8 +28,6 @@ glue_client = boto3.client("glue")
 bucket = "operations-engineering-support-request-stats"
 db_name = "support_request_data"
 
-# set data location to the dir containing the sub dirs of release versions
-# so that update_table will see all the new versions when it runs
 data_locations = [f"s3://{bucket}/data/production/{timestamp}/"]
 # for tn in table_name]
 meta_paths = [f"./data/{timestamp}.json"]
