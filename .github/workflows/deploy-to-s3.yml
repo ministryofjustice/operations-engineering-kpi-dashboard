@@ -1,0 +1,51 @@
+name: Deploy to S3
+
+on:
+  release:
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: Deploy support stats csv to S3
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: #3arn:aws:iam::593291632749:role/github-lookup-offence
+          aws-region: eu-west-1
+          role-duration-seconds: 3600
+          role-session-name: githubactionsiamsession
+        id: configure-aws-credentials
+
+      - name: Assume deployment role
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: #arn:aws:iam::593291632749:role/github-actions-infrastructure
+          aws-region: eu-west-1
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          role-skip-session-tagging: true
+          role-duration-seconds: 3600
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
