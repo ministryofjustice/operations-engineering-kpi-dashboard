@@ -106,6 +106,7 @@ class GithubService:
         return workflow_runs
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
+    @retries_github_rate_limit_exception_at_next_reset_once
     def get_workflow_runs_repo(self, repo: github.Repository, created: str) -> github.PaginatedList: 
 
         repo_workflow_runs = repo.get_workflow_runs(created=created)
