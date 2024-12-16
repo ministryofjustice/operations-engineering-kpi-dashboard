@@ -64,7 +64,7 @@ def process_repository(repo_object, start_date, end_date, github_service, os_mul
     return None
 
 
-def fetch_gha_min_cost(org_name: str = "ministryofjustice",
+def main(org_name: str = "ministryofjustice",
                             minute_cost_usd:float = 0.008,
                             os_multipliers = {
                                 "UBUNTU": 1,
@@ -98,3 +98,6 @@ def fetch_gha_min_cost(org_name: str = "ministryofjustice",
     
     Code for uploading results to the DB will be added instead 
     '''
+
+if __name__ == "__main__":
+    main()
