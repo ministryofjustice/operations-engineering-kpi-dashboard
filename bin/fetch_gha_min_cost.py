@@ -91,13 +91,13 @@ def main(org_name: str = "ministryofjustice",
             if future.result():
                 results.append(future.result())
 
-    '''# Code for restults validation
+    # Test code for restults validation
     print(results)
     with open("output.json", "w") as json_file:
         json.dump(results, json_file, indent=4)
     
-    Code for uploading results to the DB will be added instead 
-    '''
+    '''Code for uploading results to the DB needs to be added here.'''
+
 
 if __name__ == "__main__":
     main()
