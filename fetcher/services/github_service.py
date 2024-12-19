@@ -12,7 +12,7 @@ from gql.transport.exceptions import TransportServerError
 from retrying import retry
 
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def retries_github_rate_limit_exception_at_next_reset_once(func: Callable) -> Callable:
@@ -55,7 +55,7 @@ class GithubService:
     def __init__(
         self,
         org_token: str,
-        org_name: str = "ministryofjustice"
+        org_name: str,
     ) -> None:
         self.github_client_core_api = Github(org_token)
         self.org_name = org_name
@@ -70,24 +70,38 @@ class GithubService:
                 "Authorization": f"Bearer {org_token}",
             }
         )
+        
+    def repo_is_non_archived_private(self, repo):
+        if not repo.archived and repo.visibility == "private":
+            return repo
+        return None
+
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
     def get_all_private_non_archived_repos(self) -> list[github.Repository]:
-
+        
+        non_archived_private_repos=[]
         org = self.github_client_core_api.get_organization(self.org_name)
-        non_archived_private_repos = [repo for repo in org.get_repos(type="private") if not repo.archived]
-
+        non_archived_private_repos = [repo for repo in org.get_repos(type="private") if (not repo.archived)]
+        
         return non_archived_private_repos
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
-    def get_all_internal_non_archived_repos(self) -> github.PaginatedList:
+    def get_all_internal_non_archived_repos(self) -> list[github.Repository]:
 
         org = self.github_client_core_api.get_organization(self.org_name)
-        non_archived_internal_repos = [repo for repo in org.get_repos(type="internal") if not repo.archived]
+        non_archived_internal_repos = [repo for repo in org.get_repos() if (not repo.archived and repo.visibility == "internal")]
 
         return non_archived_internal_repos
+    
+    def get_all_repos(self) -> list[github.Repository]:
+
+        org = self.github_client_core_api.get_organization(self.org_name)
+        repos_all = org.get_repos() 
+
+        return repos_all
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
@@ -107,7 +121,7 @@ class GithubService:
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
-    def get_workflow_runs_repo(self, repo: github.Repository, created: str) -> github.PaginatedList: 
+    def get_workflow_runs_per_repo(self, repo: github.Repository, created: str) -> github.PaginatedList: 
 
         repo_workflow_runs = repo.get_workflow_runs(created=created)
 
