@@ -1,4 +1,4 @@
-FROM python:3.12.0-slim
+FROM python:3.12.8-slim
 
 LABEL maintainer="operations-engineering <operations-engineering@digital.justice.gov.uk>"
 
@@ -12,8 +12,8 @@ COPY app app
 COPY example-data data
 COPY data/production production
 
-RUN pip3 install --no-cache-dir pipenv
-RUN pipenv install --system --deploy --ignore-pipfile
+RUN pip3 install --no-cache-dir pipenv==2024.4.0 && \
+  pipenv install --system --deploy --ignore-pipfile
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
