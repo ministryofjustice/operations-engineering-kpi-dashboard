@@ -76,8 +76,9 @@ def process_repository(repo_object, start_date, end_date, github_service, os_mul
     return None
 
 
-def run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd, results): 
+def run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd): 
 
+    results=[]
     # default value max_workers=min(32, os.cpu_count() + 4)
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
