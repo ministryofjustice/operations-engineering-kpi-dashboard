@@ -14,6 +14,7 @@ jobs:
         with:
           app-id: ${{ secrets.OE_MOJ_PAT_APP_ID }}
           private-key: ${{ secrets.OE_MOJ_PAT_APP_PRIVATE_KEY }}
+          owner: ministryofjustice
       - name: Generate a token to access Operations Engineering AS PAT App
         id: generate-token-as
         uses: actions/create-github-app-token@ad38cffc07bac6e3857755914c4c88bfd2db4da4 # v1.10.2
