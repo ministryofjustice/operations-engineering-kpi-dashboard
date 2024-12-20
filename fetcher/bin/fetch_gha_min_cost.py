@@ -118,11 +118,6 @@ def fetch_gha_usage_data(minute_cost_usd: float = 0.008,
         results_processing = run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd)
         results.extend(results_processing)
 
-    # Test code for restults validation
-    print(results)
-    with open("output.json", "w") as json_file:
-        json.dump(results, json_file, indent=4)
-
     '''Code for uploading results to the DB needs to be added here.'''
 
 
