@@ -3,6 +3,13 @@ import json
 from datetime import datetime, timezone, timedelta
 import concurrent.futures
 from fetcher.services.github_service import GithubService
+import logging
+
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 def get_environment_variables() -> str:
@@ -79,6 +86,7 @@ def run_thread_pool_processing(repo_obj_list, start_date, end_date, github_servi
         for future in concurrent.futures.as_completed(futures):
             if future.result():
                 results.append(future.result())
+                logger.info("Repository gha usage added: %s ", future.result())
 
     return results
 
@@ -95,6 +103,7 @@ def fetch_gha_usage_data(minute_cost_usd: float = 0.008,
     start_date = (datetime.now(timezone.utc) - timedelta(days=7)).date().strftime("%Y-%m-%dT%H:%M:%SZ")
     end_date = datetime.now(timezone.utc).date().strftime("%Y-%m-%dT%H:%M:%SZ")
     gh_orgs = ["ministryofjustice", "moj-analytical-services"]
+
     for org_name in gh_orgs:
         if org_name == "ministryofjustice":
             github_service = GithubService(github_app_moj_token, org_name)
@@ -105,7 +114,8 @@ def fetch_gha_usage_data(minute_cost_usd: float = 0.008,
         repo_internal_list = github_service.get_all_internal_non_archived_repos()
         repo_obj_list = repo_obj_private_list + repo_internal_list
 
-        results = run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd, results)
+        results_processing = run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd)
+        results.extend(results_processing)
 
     # Test code for restults validation
     print(results)
