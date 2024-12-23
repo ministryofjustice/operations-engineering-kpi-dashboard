@@ -1,6 +1,7 @@
 name: 💰 Fetch GHA Cost Per Repository
 
 on:
+  pull_request:
   workflow_dispatch:
 
 jobs:
