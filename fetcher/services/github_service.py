@@ -70,21 +70,15 @@ class GithubService:
                 "Authorization": f"Bearer {org_token}",
             }
         )
-        
-    def repo_is_non_archived_private(self, repo):
-        if not repo.archived and repo.visibility == "private":
-            return repo
-        return None
-
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
     def get_all_private_non_archived_repos(self) -> list[github.Repository]:
-        
-        non_archived_private_repos=[]
+
+        non_archived_private_repos = []
         org = self.github_client_core_api.get_organization(self.org_name)
         non_archived_private_repos = [repo for repo in org.get_repos(type="private") if (not repo.archived)]
-        
+
         return non_archived_private_repos
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
@@ -92,10 +86,11 @@ class GithubService:
     def get_all_internal_non_archived_repos(self) -> list[github.Repository]:
 
         org = self.github_client_core_api.get_organization(self.org_name)
-        non_archived_internal_repos = [repo for repo in org.get_repos() if (not repo.archived and repo.visibility == "internal")]
+        non_archived_internal_repos = [repo for repo in org.get_repos() if (
+            not repo.archived and repo.visibility == "internal")]
 
         return non_archived_internal_repos
-    
+
     def get_all_repos(self) -> list[github.Repository]:
 
         org = self.github_client_core_api.get_organization(self.org_name)
@@ -105,7 +100,7 @@ class GithubService:
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
-    def get_workflows_per_repo(self, repo: github.Repository) -> github.PaginatedList:
+    def get_workflows_for_repo(self, repo: github.Repository) -> github.PaginatedList:
 
         workflows = repo.get_workflows()
 
@@ -113,7 +108,7 @@ class GithubService:
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
-    def get_workflow_runs(self, workflow: github.Workflow) -> github.PaginatedList: 
+    def get_workflow_runs(self, workflow: github.Workflow) -> github.PaginatedList:
 
         workflow_runs = workflow.get_runs()
 
@@ -121,7 +116,8 @@ class GithubService:
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
-    def get_workflow_runs_per_repo(self, repo: github.Repository, created: str) -> github.PaginatedList: 
+    def get_workflow_runs_for_repo(self, repo: github.Repository,
+                                   created: str) -> github.PaginatedList:
 
         repo_workflow_runs = repo.get_workflow_runs(created=created)
 
@@ -138,3 +134,4 @@ class GithubService:
             return json.loads(response.content.decode("utf-8"))
         raise ValueError(
             f"Failed to get details for {run_id} in repository {repo_name}. Response status code: {response.status_code}")
+        

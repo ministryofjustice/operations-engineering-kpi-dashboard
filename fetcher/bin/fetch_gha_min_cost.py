@@ -1,5 +1,6 @@
 import os
-import json
+from typing import Any, Optional, Tuple
+import github
 from datetime import datetime, timezone, timedelta
 import concurrent.futures
 from fetcher.services.github_service import GithubService
@@ -25,11 +26,14 @@ def get_environment_variables() -> str:
     return github_app_moj_token, github_app_ap_token
 
 
-def calculate_gha_cost_per_run(run_id, repo_object, github_service, os_multipliers, minute_cost_usd):
+def calculate_gha_run_minutes_and_cost(run_id: int, repo_object: github.Repository,
+                                       github_service: GithubService, os_multipliers: dict[str, int],
+                                       minute_cost_usd: float) -> Tuple[float, float]:
 
-    total_minutes = 0
-    cost_per_run = 0
-    response = github_service.get_workflow_run_details(repo_name=repo_object.full_name, run_id=run_id)
+    total_minutes = 0.0
+    cost_per_run = 0.0
+    response = github_service.get_workflow_run_details(repo_name=repo_object.full_name,
+                                                       run_id=run_id)
 
     for os_type, multiplier in os_multipliers.items():
         billable_data = response["billable"].get(os_type)
@@ -41,26 +45,32 @@ def calculate_gha_cost_per_run(run_id, repo_object, github_service, os_multiplie
     return total_minutes, cost_per_run
 
 
-def calculcate_gha_cost_per_repo(repo_object, start_date, end_date, github_service, os_multipliers, minute_cost_usd):
+def calculcate_gha_repo_minutes_and_cost(repo_object: github.Repository, start_date: str, end_date: str,
+                                 github_service: GithubService, os_multipliers: dict[str, int],
+                                 minute_cost_usd: float) -> Tuple[float, float]:
 
-    total_minutes_repo = 0
-    cost_repo = 0
-    repo_workflow_runs = github_service.get_workflow_runs_per_repo(repo=repo_object, created=f"{start_date}..{end_date}")
+    total_minutes_repo = 0.0
+    cost_repo = 0.0
+    repo_workflow_runs = github_service.get_workflow_runs_for_repo(repo=repo_object,
+                                                                   created=f"{start_date}..{end_date}")
 
-    for run in repo_workflow_runs: 
-        total_minutes_run, cost_per_run = calculate_gha_cost_per_run(run.id, repo_object, github_service, os_multipliers, minute_cost_usd)
+    for run in repo_workflow_runs:
+        total_minutes_run, cost_for_run = calculate_gha_run_minutes_and_cost(run.id, repo_object,
+                                                                             github_service, os_multipliers, minute_cost_usd)
         if total_minutes_run > 0: 
             total_minutes_repo = total_minutes_repo + total_minutes_run
-            cost_repo = round((cost_repo + cost_per_run), 3)
+            cost_repo = round((cost_repo + cost_for_run), 3)
 
     return total_minutes_repo, cost_repo
 
 
-def process_repository(repo_object, start_date, end_date, github_service, os_multipliers, minute_cost_usd): 
+def process_repository(repo_object: github.Repository, start_date: str, end_date: str,
+                       github_service: GithubService, os_multipliers: dict[str, int],
+                       minute_cost_usd: float) -> Optional[dict]:
 
-    workflows = github_service.get_workflows_per_repo(repo=repo_object)
+    workflows = github_service.get_workflows_for_repo(repo=repo_object)
     if workflows.totalCount > 0:
-        total_minutes_repo, cost_repo = calculcate_gha_cost_per_repo(
+        total_minutes_repo, cost_repo = calculcate_gha_repo_minutes_and_cost(
             repo_object, start_date, end_date,
             github_service, os_multipliers, minute_cost_usd)
 
@@ -76,14 +86,18 @@ def process_repository(repo_object, start_date, end_date, github_service, os_mul
     return None
 
 
-def run_thread_pool_processing(repo_obj_list, start_date, end_date, github_service, os_multipliers, minute_cost_usd): 
+def run_thread_pool_processing(repo_obj_list: list, start_date: str, end_date: str,
+                               github_service: GithubService, os_multipliers: dict[str, int],
+                               minute_cost_usd: float) -> list[dict[str, Any]]:
 
-    results=[]
+    results = []
     # default value max_workers=min(32, os.cpu_count() + 4)
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         for repo_object in repo_obj_list:
-            futures.append(executor.submit(process_repository, repo_object, start_date, end_date, github_service, os_multipliers, minute_cost_usd))
+            futures.append(executor.submit(process_repository, repo_object, start_date, end_date,
+                                           github_service, os_multipliers, minute_cost_usd))
+
         for future in concurrent.futures.as_completed(futures):
             if future.result():
                 results.append(future.result())
@@ -97,7 +111,7 @@ def fetch_gha_usage_data(minute_cost_usd: float = 0.008,
                              "UBUNTU": 1,
                              "MACOS": 10,
                              "WINDOWS": 2
-                             }):
+                             }) -> list[dict[str, Any]]:
 
     results = []
     github_app_moj_token, github_app_ap_token = get_environment_variables()

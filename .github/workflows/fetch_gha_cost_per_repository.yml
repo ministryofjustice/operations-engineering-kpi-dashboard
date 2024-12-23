@@ -1,21 +1,20 @@
 name: 💰 Fetch GHA Cost Per Repository
 
 on:
-  pull_request:
   workflow_dispatch:
 
 jobs:
-  pat-token-report:
+  fetch-gha-minutes:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate a token to access Operations Engineering MOJ PAT App
+      - name: Generate a temporary token to access Operations Engineering MOJ PAT App
         id: generate-token-moj
         uses: actions/create-github-app-token@ad38cffc07bac6e3857755914c4c88bfd2db4da4 # v1.10.2
         with:
           app-id: ${{ secrets.OE_MOJ_PAT_APP_ID }}
           private-key: ${{ secrets.OE_MOJ_PAT_APP_PRIVATE_KEY }}
           owner: ministryofjustice
-      - name: Generate a token to access Operations Engineering AS PAT App
+      - name: Generate a temporary token to access Operations Engineering AS PAT App
         id: generate-token-as
         uses: actions/create-github-app-token@ad38cffc07bac6e3857755914c4c88bfd2db4da4 # v1.10.2
         with:
@@ -31,7 +30,8 @@ jobs:
         run: |
           pip install pipenv
           pipenv install
-      - run: pipenv run python3 -m fetcher.bin.fetch_gha_min_cost
+      - name: Fetch GHA usage and cost data
+        run: pipenv run python3 -m fetcher.bin.fetch_gha_min_cost
         env:
           GH_APP_MOJ_TOKEN: ${{ steps.generate-token-moj.outputs.token }}
           GH_APP_AS_TOKEN: ${{ steps.generate-token-as.outputs.token }}
