@@ -18,7 +18,7 @@ jobs:
           python-version: '3.12'
       - name: Install Pipenv  
         run: |
-          pip3 install --user pipenv
-	        pipenv install
+        pip3 install --user pipenv
+        pipenv install
       - name: Run Unit Tests 
         run: pipenv run coverage run -m pytest fetcher/tests/ -v
