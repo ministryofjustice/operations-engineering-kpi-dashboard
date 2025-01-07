@@ -21,3 +21,6 @@ gunicorn = "==23.0.0"
 python_version = "3.12"
 
 [dev-packages]
+pytest = "==8.3.4"
+pytest-mock = "==3.14.0"
+coverage = "==7.6.10"
