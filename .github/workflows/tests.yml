@@ -21,4 +21,4 @@ jobs:
           pip3 install --user pipenv
           pipenv install --dev
       - name: Run Unit Tests 
-        run: pipenv run coverage run -m pytest fetcher/tests/ -v
+        run: pipenv run coverage run -m pytest -v
