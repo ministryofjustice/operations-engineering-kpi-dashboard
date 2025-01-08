@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 import pytest
 import json
 from typing import Optional
@@ -164,6 +165,26 @@ class TestGithubService:
 
         assert len(list(workflow_runs)) == 3
         assert all(workflow_run.name in ['wf_test_run1', 'wf_test_run2', 'wf_test_run3'] for workflow_run in workflow_runs)
+    
+    def test_get_workflow_runs_for_repo(self):
+        
+        mock_repo = MagicMock(spec=Repository)
+        mock_workflow_runs_repo_list = [
+            create_mock_workflow_run(id=1, name="wf_test_run1", status="completed", ), 
+            create_mock_workflow_run(id=2, name="wf_test_run2", status="completed"),
+            create_mock_workflow_run(id=3, name="wf_test_run3", status="completed")
+        ]
+        mock_workflow_runs_repo = MagicMock(spec=PaginatedList)
+        mock_workflow_runs_repo.__iter__.return_value = iter(mock_workflow_runs_repo_list)
+        mock_repo.get_workflow_runs.return_value = mock_workflow_runs_repo
+        end_date = datetime.now(timezone.utc).date().strftime("%Y-%m-%dT%H:%M:%SZ")
+        start_date = (datetime.now(timezone.utc) - timedelta(days=7)).date().strftime("%Y-%m-%dT%H:%M:%SZ")
+        created=f"{start_date}..{end_date}"
+        workflow_runs_for_repo = self.gh_service.get_workflow_runs_for_repo(repo=mock_repo, created=created)
+        
+        assert len(list(workflow_runs_for_repo)) == 3
+        assert all(workflow_run.name in ['wf_test_run1', 'wf_test_run2', 'wf_test_run3'] for workflow_run in workflow_runs_for_repo)
+        
 
     def test_get_workflow_run_details_success(self, mocker):
 
