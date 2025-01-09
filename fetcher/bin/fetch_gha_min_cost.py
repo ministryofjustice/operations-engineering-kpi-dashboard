@@ -40,10 +40,11 @@ def _calculate_gha_run_minutes_and_cost(run_id: int, repo_object: github.Reposit
         billable_data = response["billable"].get(os_type)
         if billable_data:
             total_ms = billable_data['total_ms']
+            cost_usd = total_ms / 60000 * minute_cost_usd * multiplier
             total_minutes += total_ms / 60000
-            cost_per_run += total_minutes * minute_cost_usd * multiplier
+            cost_per_run += cost_usd
 
-    return total_minutes, cost_per_run
+    return total_minutes, round(cost_per_run, 3)
 
 
 def _calculcate_gha_repo_minutes_and_cost(repo_object: github.Repository, start_date: str, end_date: str,
@@ -60,9 +61,9 @@ def _calculcate_gha_repo_minutes_and_cost(repo_object: github.Repository, start_
                                                                              github_service, os_multipliers, minute_cost_usd)
         if total_minutes_run > 0: 
             total_minutes_repo = total_minutes_repo + total_minutes_run
-            cost_repo = round((cost_repo + cost_for_run), 3)
+            cost_repo = cost_repo + cost_for_run
 
-    return total_minutes_repo, cost_repo
+    return total_minutes_repo, round(cost_repo, 3)
 
 
 def _process_repository(repo_object: github.Repository, start_date: str, end_date: str,
@@ -78,7 +79,8 @@ def _process_repository(repo_object: github.Repository, start_date: str, end_dat
 
         if cost_repo > 0:
             return {
-                "date": end_date,
+                "start_datetime": start_date,
+                "end_datetime": end_date,
                 "repo_name": repo_object.name,
                 "gha_minutes_usage_min": total_minutes_repo,
                 "gha_minutes_cost_usd": cost_repo,
