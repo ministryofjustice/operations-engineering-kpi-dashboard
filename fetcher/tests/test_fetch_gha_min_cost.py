@@ -222,20 +222,3 @@ class TestFetchGithubActionsCost:
         
         assert mock_get_environment_variables.call_count == 1
         assert mock_run_thread_pool_processing.call_count == 2
-        
-        
-        
-
-        
-        
-        
-        
-    
-        
-        
-        
-        
-        
-        
-        
-        
