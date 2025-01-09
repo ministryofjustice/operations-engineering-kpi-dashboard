@@ -79,7 +79,8 @@ def _process_repository(repo_object: github.Repository, start_date: str, end_dat
 
         if cost_repo > 0:
             return {
-                "date": end_date,
+                "start_datetime": start_date,
+                "end_datetime": end_date,
                 "repo_name": repo_object.name,
                 "gha_minutes_usage_min": total_minutes_repo,
                 "gha_minutes_cost_usd": cost_repo,
