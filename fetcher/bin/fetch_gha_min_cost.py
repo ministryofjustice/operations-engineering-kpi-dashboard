@@ -104,6 +104,7 @@ def _run_thread_pool_processing(repo_obj_list: list, start_date: str, end_date: 
         for future in concurrent.futures.as_completed(futures):
             if future.result():
                 results.append(future.result())
+                print("Repository gha usage added: %s ", future.result())
                 logger.info("Repository gha usage added: %s ", future.result())
                 sys.stdout.flush()
 
