@@ -2,6 +2,8 @@ name: 💰 Fetch GHA Cost Per Repository
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: ["main"]
 
 jobs:
   fetch-gha-minutes:

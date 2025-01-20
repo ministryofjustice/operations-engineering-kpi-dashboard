@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 from typing import Any, Optional, Tuple
 import github
@@ -104,6 +105,7 @@ def _run_thread_pool_processing(repo_obj_list: list, start_date: str, end_date: 
             if future.result():
                 results.append(future.result())
                 logger.info("Repository gha usage added: %s ", future.result())
+                sys.stdout.flush()
 
     return results
 
