@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_environment_variables() -> str:
-    github_app_moj_token = os.getenv("ADMIN_GITHUB_TOKEN")
+    github_app_moj_token = os.getenv("GH_APP_MOJ_TOKEN")
     if not github_app_moj_token:
         raise ValueError(
             "The env variable GH_APP_MOJ_TOKEN is empty or missing")
