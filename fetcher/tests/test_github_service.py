@@ -122,7 +122,7 @@ class TestGithubService:
             create_mock_repo(name="repo1", archived=False, visibility="internal"),
             create_mock_repo(name="repo2", archived=True, visibility="internal"),
             create_mock_repo(name="repo3", archived=False, visibility="public"),
-            create_mock_repo(name="re   po4", archived=False, visibility="private"),
+            create_mock_repo(name="repo4", archived=False, visibility="private"),
             create_mock_repo(name="repo5", archived=False, visibility="internal")
         ]
         mock_all_repos = MagicMock(spec=PaginatedList)
