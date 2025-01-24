@@ -1,9 +1,24 @@
 import pytest
-from bin.fetch_gha_min_cost import _get_environment_variables
-from bin.fetch_gha_min_cost import _calculate_gha_run_minutes_and_cost, _calculcate_gha_repo_minutes_and_cost, _process_repository, _run_thread_pool_processing, fetch_gha_usage_data
+from datetime import datetime, timezone
+from bin.fetch_gha_min_cost import (
+    _get_environment_variables,_calculate_job_cost,
+    _calculate_gha_run_minutes_and_cost,
+    _calculcate_gha_repo_minutes_and_cost,
+    _process_repository, _run_thread_pool_processing,
+    fetch_gha_usage_data
+)
 from unittest.mock import MagicMock, Mock
 from github.Repository import Repository
 
+
+def create_mock_job(name: str, runner_name: str, started_at: datetime, completed_at: datetime) -> MagicMock:
+    mock_job = MagicMock()
+    mock_job.name = name
+    mock_job.runner_name = runner_name
+    mock_job.started_at = started_at
+    mock_job.completed_at = completed_at
+
+    return mock_job
 
 class TestFetchGithubActionsCost:
     def test_get_environment_variables_success(self, mocker): 
@@ -42,47 +57,77 @@ class TestFetchGithubActionsCost:
             "The env variable GH_APP_AS_TOKEN is empty or missing"
         )
     
-    def test_calculate_gha_run_minutes_and_cost(self, mocker):
+    def test_calculate_job_cost_ubuntu(self, mocker):
         
-        run_id = 1234
         minute_cost_usd = 0.008
         os_multipliers = {
                              "UBUNTU": 1,
                              "MACOS": 10,
                              "WINDOWS": 2,
                              }
+        minutes_for_job = 8.0 
+        mock_job = Mock()
+        mock_job.labels = ["ubuntu-latest"]
+        cost_for_job = _calculate_job_cost(mock_job, os_multipliers, minute_cost_usd, minutes_for_job)
         
-        mock_repo_object = Mock()
-        mock_github_service = mocker.patch("services.github_service.GithubService")
-        mock_wf_run_details = {
-            "run_duration_ms": 2610000,
-            "billable": {
-                "UBUNTU": {
-                    "total_ms": 210000,
-                    "jobs": [
-                        {"name": "build", "duration_ms": 140000},
-                        {"name": "test", "duration_ms": 70000}
-                    ]
-                }, 
-                "MACOS": {
-                    "total_ms": 240000,
-                    "jobs": [
-                        {"name": "build", "duration_ms": 160000},
-                        {"name": "test", "duration_ms": 80000}
-                    ]
-                }
-            }
-        }
+        assert cost_for_job == 0.064
+    
+    
+    def test_calculate_job_cost_macos(self, mocker):
         
-        mock_github_service.get_workflow_run_details.return_value = mock_wf_run_details
+        minute_cost_usd = 0.008
+        os_multipliers = {
+                             "UBUNTU": 1,
+                             "MACOS": 10,
+                             "WINDOWS": 2,
+                             }
+        minutes_for_job = 8.0 
+        mock_job = Mock()
+        mock_job.labels = ["macos-latest"]
+        cost_for_job = _calculate_job_cost(mock_job, os_multipliers, minute_cost_usd, minutes_for_job)
         
-        total_minutes, cost_per_run = _calculate_gha_run_minutes_and_cost(
-            run_id, mock_repo_object, mock_github_service, os_multipliers, minute_cost_usd 
-            
+        assert cost_for_job == 0.64
+
+
+    def test_calculate_gha_run_minutes_and_cost(self, mocker):
+        
+        minute_cost_usd = 0.008
+        os_multipliers = {
+                             "UBUNTU": 1,
+                             "MACOS": 10,
+                             "WINDOWS": 2,
+                             }
+        mock_jobs=MagicMock()
+        mock_job_list = [
+            create_mock_job(
+                name="job1", runner_name="GitHub Actions 002",
+                started_at=datetime(2023, 1, 23, 20, 40, 30, tzinfo=timezone.utc),
+                completed_at=datetime(2023, 1, 23, 20, 40, 55, tzinfo=timezone.utc)),
+            create_mock_job(
+                name="job2", runner_name="GitHub Actions 003",
+                started_at=datetime(2023, 1, 23, 20, 40, 59, tzinfo=timezone.utc),
+                completed_at=datetime(2023, 1, 23, 20, 42, 55, tzinfo=timezone.utc)),
+            create_mock_job(
+                name="job3", runner_name="GitHub Actions 003",
+                started_at=datetime(2023, 1, 23, 20, 43, 1, tzinfo=timezone.utc),
+                completed_at=datetime(2023, 1, 23, 20, 46, tzinfo=timezone.utc))
+            ]
+        mock_jobs.__iter__.return_value = iter(mock_job_list)
+        mock_calculate_job_cost = mocker.patch(
+            "bin.fetch_gha_min_cost._calculate_job_cost"
         )
-        assert total_minutes == 7.5
-        assert cost_per_run == 0.348
+        mock_calculate_job_cost.side_effect = [
+            0.008, 
+            0.016,
+            0.024,  
+        ]
+        minutes_for_run, cost_for_run = _calculate_gha_run_minutes_and_cost(
+            mock_jobs, os_multipliers, minute_cost_usd)
         
+        assert minutes_for_run == 6.0
+        assert cost_for_run == 0.048
+        mock_calculate_job_cost.call_count == 3
+       
     def test_calculcate_gha_repo_minutes_and_cost(self, mocker): 
         
         mock_repo = Mock()
@@ -114,7 +159,7 @@ class TestFetchGithubActionsCost:
         
         assert total_minutes == 43.0
         assert total_cost == 1.888
-        
+ 
     def test_process_repository_cost_returned(self, mocker): 
         
         mock_github_service = mocker.patch("services.github_service.GithubService")

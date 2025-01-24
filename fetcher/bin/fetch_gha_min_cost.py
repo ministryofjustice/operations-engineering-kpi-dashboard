@@ -1,5 +1,7 @@
 import os
 import re
+import re
+import math
 from typing import Any, Optional, Tuple
 import github
 from datetime import datetime, timezone, timedelta
@@ -26,25 +28,34 @@ def _get_environment_variables() -> str:
 
     return github_app_moj_token, github_app_ap_token
 
+def _calculate_job_cost(job, os_multipliers: dict[str, int], minute_cost_usd: float,
+                        minutes_for_job: float) -> float:
+    
+    if re.search(r"ubuntu", job.labels[0]):
+        multiplier = os_multipliers["UBUNTU"]
+    elif re.search(r"windows", job.labels[0]):
+        multiplier = os_multipliers["WINDOWS"]
+    elif re.search(r"macos", job.labels[0]):
+        multiplier = os_multipliers["MACOS"]
+    
+    cost_for_job = minutes_for_job * multiplier * minute_cost_usd
+    
+    return cost_for_job
 
-def _calculate_gha_run_minutes_and_cost(run_id: int, repo_object: github.Repository,
-                                       github_service: GithubService, os_multipliers: dict[str, int],
-                                       minute_cost_usd: float) -> Tuple[float, float]:
-
-    total_minutes = 0.0
-    cost_per_run = 0.0
-    response = github_service.get_workflow_run_details(repo_name=repo_object.full_name,
-                                                       run_id=run_id)
-
-    for os_type, multiplier in os_multipliers.items():
-        billable_data = response["billable"].get(os_type)
-        if billable_data:
-            total_ms = billable_data['total_ms']
-            cost_usd = total_ms / 60000 * minute_cost_usd * multiplier
-            total_minutes += total_ms / 60000
-            cost_per_run += cost_usd
-
-    return total_minutes, round(cost_per_run, 3)
+def _calculate_gha_run_minutes_and_cost(jobs: github.PaginatedList, os_multipliers: dict[str, int],
+                                           minute_cost_usd: float):
+    
+    minutes_for_run=0.0
+    cost_for_run=0.0
+    for job in jobs: 
+        if isinstance(job.runner_name, str) and re.search(r"GitHub Actions", job.runner_name): 
+            seconds_for_job=(job.completed_at - job.started_at).total_seconds()
+            minutes_for_job = math.ceil(seconds_for_job / 60)
+            cost_for_job = _calculate_job_cost(job, os_multipliers, minute_cost_usd, minutes_for_job)
+            minutes_for_run += minutes_for_job
+            cost_for_run += cost_for_job
+            
+    return minutes_for_run, round(cost_for_run, 3)
 
 
 def _calculcate_gha_repo_minutes_and_cost(repo_object: github.Repository, start_date: str, end_date: str,
@@ -57,12 +68,13 @@ def _calculcate_gha_repo_minutes_and_cost(repo_object: github.Repository, start_
                                                                    created=f"{start_date}..{end_date}")
 
     for run in repo_workflow_runs:
-        total_minutes_run, cost_for_run = _calculate_gha_run_minutes_and_cost(run.id, repo_object,
-                                                                             github_service, os_multipliers, minute_cost_usd)
-        if total_minutes_run > 0: 
-            total_minutes_repo = total_minutes_repo + total_minutes_run
+        run_jobs=run.jobs()
+        minutes_for_run, cost_for_run =_calculate_gha_run_minutes_and_cost(run_jobs, os_multipliers, minute_cost_usd)
+        
+        if minutes_for_run > 0: 
+            total_minutes_repo = total_minutes_repo + minutes_for_run
             cost_repo = cost_repo + cost_for_run
-
+            
     return total_minutes_repo, round(cost_repo, 3)
 
 
@@ -111,7 +123,7 @@ def _run_thread_pool_processing(repo_obj_list: list, start_date: str, end_date: 
 
 
 def fetch_gha_usage_data(minute_cost_usd: float = 0.008,
-                         period_days: int = 7,
+                         period_days: int = 1,
                          os_multipliers: dict = {
                              "UBUNTU": 1,
                              "MACOS": 10,
