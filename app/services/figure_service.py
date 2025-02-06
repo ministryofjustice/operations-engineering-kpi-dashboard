@@ -207,6 +207,9 @@ class FigureService:
             yaxis_title="Min used"
         )
 
+        if github_actions_quota_usage_cumulative.shape[0] < 1: 
+            return fig_github_actions_quota_usage_cumulative, None
+
         # Add quota reset lines
         start_date = github_actions_quota_usage_cumulative['timestamp'].min().date()
         end_date = github_actions_quota_usage_cumulative['timestamp'].max().date()
@@ -241,13 +244,13 @@ class FigureService:
         fig_github_actions_quota_usage_daily.update_layout(
             yaxis_title="Min used"
         )
-
-        fig_github_actions_quota_usage_daily.add_hline(
-            y=github_actions_quota_usage_daily['Daily_minutes'].median(),
-            line=dict(color="red", dash="dash"),  # Custom line style
-            annotation_text="Median",
-            annotation_position="top right"
-        )
+        if github_actions_quota_usage_daily.shape[0] > 0:
+            fig_github_actions_quota_usage_daily.add_hline(
+                y=github_actions_quota_usage_daily['Daily_minutes'].median(),
+                line=dict(color="red", dash="dash"),  # Custom line style
+                annotation_text="Median",
+                annotation_position="top right"
+            )
 
         return fig_github_actions_quota_usage_cumulative, fig_github_actions_quota_usage_daily
 
