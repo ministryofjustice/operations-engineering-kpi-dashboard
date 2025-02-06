@@ -189,7 +189,6 @@ class FigureService:
             columns=["timestamp", "count"],
         ).sort_values(by="timestamp", ascending=True)
 
-
         fig_github_actions_quota_usage_cumulative = px.line(
             github_actions_quota_usage_cumulative,
             x="timestamp",
