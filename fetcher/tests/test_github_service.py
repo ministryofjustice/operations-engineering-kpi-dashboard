@@ -1,12 +1,12 @@
-from datetime import datetime, timezone, timedelta
-import pytest
 import json
 from typing import Optional
+from datetime import datetime, timezone, timedelta
+from unittest.mock import MagicMock
 from github.Repository import Repository
 from github.Workflow import Workflow
 from github.Organization import Organization
 from github.PaginatedList import PaginatedList
-from unittest.mock import MagicMock
+import pytest
 from services.github_service import GithubService
 
 
@@ -165,9 +165,9 @@ class TestGithubService:
 
         assert len(list(workflow_runs)) == 3
         assert all(workflow_run.name in ['wf_test_run1', 'wf_test_run2', 'wf_test_run3'] for workflow_run in workflow_runs)
-    
+
     def test_get_workflow_runs_for_repo(self):
-        
+
         mock_repo = MagicMock(spec=Repository)
         mock_workflow_runs_repo_list = [
             create_mock_workflow_run(id=1, name="wf_test_run1", status="completed", ), 
@@ -181,10 +181,9 @@ class TestGithubService:
         start_date = (datetime.now(timezone.utc) - timedelta(days=7)).date().strftime("%Y-%m-%dT%H:%M:%SZ")
         created=f"{start_date}..{end_date}"
         workflow_runs_for_repo = self.gh_service.get_workflow_runs_for_repo(repo=mock_repo, created=created)
-        
+
         assert len(list(workflow_runs_for_repo)) == 3
         assert all(workflow_run.name in ['wf_test_run1', 'wf_test_run2', 'wf_test_run3'] for workflow_run in workflow_runs_for_repo)
-        
 
     def test_get_workflow_run_details_success(self, mocker):
 
@@ -241,4 +240,57 @@ class TestGithubService:
         mock_get_request.call_count == 3
         mock_get_request.assert_called_with(
             "https://api.github.com/repos/test_repo/actions/runs/1234/timing", timeout=10
+        )
+
+    def test_get_current_daily_usage_for_enterprise_success(self, mocker):
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = json.dumps({
+            "usageItems": [ {
+                "date": "2023-08-01","product": "Actions",
+                "sku": "Actions Linux", "quantity": 100,
+                "unitType": "minutes", "pricePerUnit": 0.008,
+                "grossAmount": 0.8, "discountAmount": 0,
+                "netAmount": 0.8, "organizationName": "GitHub",
+                "repositoryName": "github/example"
+                } ] 
+            }).encode("utf-8")
+
+        mock_get_request = mocker.patch.object(
+            self.gh_service.github_client_rest_api, "get", return_value=mock_response)
+        result = self.gh_service.get_current_daily_usage_for_enterprise(day=11)
+
+        assert result == {
+            "usageItems": [ {
+                "date": "2023-08-01","product": "Actions",
+                "sku": "Actions Linux", "quantity": 100,
+                "unitType": "minutes", "pricePerUnit": 0.008,
+                "grossAmount": 0.8, "discountAmount": 0,
+                "netAmount": 0.8, "organizationName": "GitHub",
+                "repositoryName": "github/example"
+                } ] 
+            }
+
+        mock_get_request.assert_called_with(
+            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?day=11", timeout=10
+        )
+
+    def test_get_current_daily_usage_for_enterprise_error(self, mocker):
+
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.content = {"message": "Not Found"}
+        mock_get_request = mocker.patch.object(
+            self.gh_service.github_client_rest_api, "get", return_value=mock_response)
+
+        with pytest.raises(ValueError) as err:
+            self.gh_service.get_current_daily_usage_for_enterprise(day=11)
+
+        assert str(err.value) == (
+            "Failed to get usage report for the enterprise ministry-of-justice-uk"
+        )
+        mock_get_request.call_count == 3
+        mock_get_request.assert_called_with(
+            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?day=11", timeout=10
         )

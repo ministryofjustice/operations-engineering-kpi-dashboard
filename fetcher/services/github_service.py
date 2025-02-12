@@ -52,13 +52,18 @@ def retries_github_rate_limit_exception_at_next_reset_once(func: Callable) -> Ca
 
 
 class GithubService:
+    ENTERPRISE_NAME = "ministry-of-justice-uk"
+    ORGANISATION_NAME = "ministryofjustice"
     def __init__(
         self,
         org_token: str,
-        org_name: str,
+        org_name: str = ORGANISATION_NAME,
+        enterprise_name: str = ENTERPRISE_NAME
     ) -> None:
         self.github_client_core_api = Github(org_token)
         self.org_name = org_name
+        self.enterprise_name: str = enterprise_name
+        
         self.github_client_gql_api: Client = Client(transport=AIOHTTPTransport(
             url="https://api.github.com/graphql",
             headers={"Authorization": f"Bearer {org_token}"},
@@ -134,4 +139,16 @@ class GithubService:
             return json.loads(response.content.decode("utf-8"))
         raise ValueError(
             f"Failed to get details for {run_id} in repository {repo_name}. Response status code: {response.status_code}")
-        
+
+    def get_current_daily_usage_for_enterprise(self, day: int) -> dict:
+
+        logging.info("Retrieving the daily usage billing report for the enterprise %s", self.enterprise_name)
+        response_okay = 200
+        url = f"https://api.github.com/enterprises/{self.enterprise_name}/settings/billing/usage?day={day}"
+
+        response = self.github_client_rest_api.get(url, timeout=10)
+        if response.status_code == response_okay:
+            logging.info("Daily usage billing report for the enterprise %s retrieved successfully.", self.enterprise_name)
+            return json.loads(response.content.decode("utf-8"))
+        raise ValueError(
+            f"Failed to get usage report for the enterprise {self.enterprise_name}")
