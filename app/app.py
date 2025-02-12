@@ -27,6 +27,7 @@ def create_app() -> Flask:
 
     logger.info("Populating stub data...")
     server.database_service.create_indicators_table()
+    server.database_service.create_github_usage_reports_table()
     server.database_service.clean_stubbed_indicators_table()
     server.database_service.add_stubbed_indicators()
 
