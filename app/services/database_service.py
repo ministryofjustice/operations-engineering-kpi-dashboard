@@ -53,7 +53,7 @@ class DatabaseService:
                         id SERIAL PRIMARY KEY,
                         report_date DATE NOT NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        report_data JSONB NOT NULL
+                        report_usage_data JSONB NOT NULL
                     )
             """
         )
