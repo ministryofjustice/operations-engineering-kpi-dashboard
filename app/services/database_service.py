@@ -46,6 +46,18 @@ class DatabaseService:
                 """
         )
 
+    def create_github_usage_reports_table(self) -> None:
+        self.__execute_query(
+            sql="""
+                    CREATE TABLE IF NOT EXISTS github_usage_reports (
+                        id SERIAL PRIMARY KEY,
+                        report_date DATE NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        report_usage_data JSONB NOT NULL
+                    )
+            """
+        )
+
     def clean_stubbed_indicators_table(self) -> None:
         self.__execute_query(sql="DELETE FROM indicators WHERE indicator LIKE 'STUBBED%'")
 
