@@ -64,6 +64,9 @@ class DatabaseService:
     def add_indicator(self, indicator, count) -> None:
         self.__execute_query("INSERT INTO indicators (indicator,timestamp, count) VALUES (%s, %s, %s);", values=[indicator, datetime.datetime.now(), count])
 
+    def add_github_usage_report(self, report_date, report_usage_data) -> None:
+        self.__execute_query("INSERT INTO github_usage_reports (report_date, created_at, report_usage_data) VALUES (%s, %s, %s);", values=[report_date, datetime.datetime.now(), report_usage_data])
+
     def add_stubbed_indicators(self):
         for values in [
             # SENTRY_DAILY_TRANSACTION_USAGE
