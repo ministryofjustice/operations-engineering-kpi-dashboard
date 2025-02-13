@@ -5,6 +5,8 @@ services:
     image: "kpi-dashboard"
     container_name: "kpi-dashboard"
     environment:
+      KPI_DASHBOARD_URL: "http://127.0.0.1:4567"
+      KPI_DASHBOARD_API_KEY: "test"
       AUTH_ENABLED: false
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin

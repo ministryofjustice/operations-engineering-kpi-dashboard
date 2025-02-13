@@ -1,7 +1,9 @@
 import logging
+import json
 from datetime import datetime, timedelta
 import os
 from fetcher.services.github_service import GithubService
+from fetcher.services.kpi_service import KpiService
 
 
 logging.basicConfig(
@@ -24,10 +26,10 @@ def fetch_usage_report_daily():
 
     github_token = _get_environment_variables()
     github_service = GithubService(github_token)
-    yesterday = (datetime.today() - timedelta(days=1)).day
-    daily_usage_report_json = github_service.get_current_daily_usage_for_enterprise(day=yesterday)
+    yesterday_date = (datetime.today() - timedelta(days=1)).date()
+    report_usage_data = github_service.get_current_daily_usage_for_enterprise(day=yesterday_date.day)
 
-    '''Code for uploading results to the DB needs to be added here.'''
+    KpiService(os.getenv("KPI_DASHBOARD_URL"), os.getenv("KPI_DASHBOARD_API_KEY")).track_github_usage_report_daily(str(yesterday_date), json.dumps(report_usage_data))
 
 
 if __name__ == "__main__":
