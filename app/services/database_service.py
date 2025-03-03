@@ -21,7 +21,7 @@ class DatabaseService:
             logging.info("Executing query...")
             cur = conn.cursor()
             cur.execute(sql, values)
-            data = None 
+            data = None
             if cur.description is not None:
                 try:
                     data = cur.fetchall()
@@ -58,11 +58,29 @@ class DatabaseService:
             """
         )
 
+    def create_github_repos_meteadata_table(self) -> None:
+        self.__execute_query(
+            sql="""
+                    CREATE TABLE IF NOT EXISTS github_repos_metadata (
+                        github_id INTEGER PRIMARY KEY,
+                        name VARCHAR NOT NULL,
+                        full_name VARCHAR NOT NULL,
+                        owner VARCHAR NOT NULL,
+                        visibility VARCHAR NOT NULL
+                    )
+            """
+        )
+
     def clean_stubbed_indicators_table(self) -> None:
         self.__execute_query(sql="DELETE FROM indicators WHERE indicator LIKE 'STUBBED%'")
 
     def add_indicator(self, indicator, count) -> None:
         self.__execute_query("INSERT INTO indicators (indicator,timestamp, count) VALUES (%s, %s, %s);", values=[indicator, datetime.datetime.now(), count])
+
+    def add_github_repository_metadata(self, github_id: int, name: str, full_name: str, owner: str, visibility: str) -> None:
+
+        self.__execute_query("INSERT INTO github_repos_metadata (github_id, name, full_name, owner, visibility) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (github_id) DO NOTHING;",
+                             values=[github_id, name, full_name, owner, visibility])
 
     def add_github_usage_report(self, report_date, report_usage_data) -> None:
         self.__execute_query("INSERT INTO github_usage_reports (report_date, created_at, report_usage_data) VALUES (%s, %s, %s);", values=[report_date, datetime.datetime.now(), report_usage_data])
