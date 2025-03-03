@@ -28,8 +28,6 @@ def fetch_gh_repos_metadata():
     for org in organisations:
         repos=github_service.get_non_archived_repos(org_name=org)
         for repo in repos:
-            print((repo.id, repo.name, repo.full_name,
-                   repo.owner.login, repo.visibility))
             KpiService(os.getenv("KPI_DASHBOARD_URL"), os.getenv("KPI_DASHBOARD_API_KEY")).post_github_repository_metadata(
                 repo.id, repo.name, repo.full_name, repo.owner.login, repo.visibility)
 
