@@ -78,6 +78,15 @@ class GithubService:
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once
+    def get_all_organisations_in_enterprise(self) -> list[github.Organization]:
+        logging.info(
+            f"Getting all organisations for enterprise {self.ENTERPRISE_NAME}")
+
+        return [org.login for org in self.github_client_core_api.get_user().get_orgs()] or []
+
+
+    @retry(stop_max_attempt_number=3, wait_fixed=2000)
+    @retries_github_rate_limit_exception_at_next_reset_once
     def get_all_private_non_archived_repos(self) -> list[github.Repository]:
 
         non_archived_private_repos = []
@@ -102,6 +111,16 @@ class GithubService:
         repos_all = org.get_repos() 
 
         return repos_all
+    
+    @retry(stop_max_attempt_number=3, wait_fixed=2000)
+    @retries_github_rate_limit_exception_at_next_reset_once
+    def get_non_archived_repos(self, org_name) -> list[github.Repository]:
+
+        org = self.github_client_core_api.get_organization(org_name)
+        non_archived_repos = [repo for repo in org.get_repos() if (
+            not repo.archived)]
+
+        return non_archived_repos
 
     @retry(stop_max_attempt_number=3, wait_fixed=2000)
     @retries_github_rate_limit_exception_at_next_reset_once

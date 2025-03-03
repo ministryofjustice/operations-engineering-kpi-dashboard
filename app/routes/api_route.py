@@ -37,3 +37,14 @@ def add_github_usage_report():
     report_usage_data = request.get_json().get("report_usage_data")
     current_app.database_service.add_github_usage_report(report_date, report_usage_data)
     return ("", 204)
+
+@api_route.route("/github_repository_metadata/add", methods=["POST"])
+@requires_api_key
+def add_github_repository_metadata():
+    github_id = request.get_json().get("github_id")
+    name = request.get_json().get("name")
+    full_name = request.get_json().get("full_name")
+    owner = request.get_json().get("owner")
+    visibility = request.get_json().get("visibility")
+    current_app.database_service.add_github_repository_metadata(github_id, name, full_name, owner, visibility)
+    return ("", 204)
