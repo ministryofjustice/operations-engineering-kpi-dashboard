@@ -76,6 +76,25 @@ class TestGithubService:
         assert self.gh_service.github_client_rest_api.headers["Accept"] == "application/vnd.github+json"
         isinstance(self.gh_service.github_client_core_api, MagicMock)
 
+    def test_get_non_archived_repos(self):
+
+        mock_org = MagicMock(spec=Organization)
+        mock_repos_list = [
+            create_mock_repo(name="repo1", archived=True),
+            create_mock_repo(name="repo2", archived=False),
+            create_mock_repo(name="repo3", archived=False)
+        ]
+        mock_repos = MagicMock(spec=PaginatedList)
+        mock_repos.__iter__.return_value = iter(mock_repos_list)
+        self.gh_service.github_client_core_api.get_organization.return_value = mock_org
+        mock_org.get_repos.return_value = mock_repos
+        result_repos = self.gh_service.get_non_archived_repos("ministryofjustice")
+
+        assert len(result_repos) == 2
+        assert all(not repo.archived for repo in result_repos)
+        assert all(repo.name in ['repo2', 'repo3'] for repo in result_repos)
+
+    
     def test_get_all_private_non_archived_repos(self):
 
         mock_org = MagicMock(spec=Organization)
