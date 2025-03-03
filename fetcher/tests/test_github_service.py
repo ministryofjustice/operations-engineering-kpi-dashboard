@@ -94,7 +94,6 @@ class TestGithubService:
         assert all(not repo.archived for repo in result_repos)
         assert all(repo.name in ['repo2', 'repo3'] for repo in result_repos)
 
-    
     def test_get_all_private_non_archived_repos(self):
 
         mock_org = MagicMock(spec=Organization)

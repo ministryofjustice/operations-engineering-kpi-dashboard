@@ -8,6 +8,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def _get_environment_variables() -> str:
 
     github_token = os.getenv("GH_TOKEN")

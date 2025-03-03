@@ -26,9 +26,9 @@ class TestFetchGhReposMetadata:
         assert str(err.value) == (
             "The env variable GH_TOKEN is empty or missing"
         )
-        
+
     def test_fetch_gh_repos_metadata(self, mocker):
-        
+
         mock_get_environment_variables = mocker.patch(
             "bin.fetch_gh_repos_metadata._get_environment_variables")
         mock_get_environment_variables.return_value = "token_mock"
