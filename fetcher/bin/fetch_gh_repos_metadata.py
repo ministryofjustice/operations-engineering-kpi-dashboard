@@ -34,3 +34,7 @@ def fetch_gh_repos_metadata():
                 repo.id, repo.name, repo.full_name, repo.owner.login, repo.visibility)
 
         logger.info("Repository metadata fetched for the org: %s ", org)
+
+
+if __name__ == "__main__":
+    fetch_gh_repos_metadata()
