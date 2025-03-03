@@ -1,5 +1,5 @@
 import logging
-
+from datetime import datetime
 from dash import Dash, dcc, html
 from dash_auth import OIDCAuth, add_public_routes
 from flask import Flask
@@ -28,6 +28,7 @@ def create_app() -> Flask:
     logger.info("Populating stub data...")
     server.database_service.create_indicators_table()
     server.database_service.create_github_usage_reports_table()
+    server.database_service.create_github_repos_meteadata_table()
     server.database_service.clean_stubbed_indicators_table()
     server.database_service.add_stubbed_indicators()
 
@@ -42,7 +43,9 @@ def create_app() -> Flask:
             force_https_callback=True,
             secure_session=True,
         )
-        add_public_routes(app, routes=["/api/indicator/add", "/api/github_usage_report/add"])
+        add_public_routes(app, routes=["/api/indicator/add",
+                                       "/api/github_usage_report/add"
+                                       "/api/github_repository_metadata/add"])
         auth.register_provider(
             "idp",
             token_endpoint_auth_method="client_secret_post",
@@ -109,7 +112,6 @@ def create_dashboard(figure_service: FigureService):
                         "display": "inline-block",
                     },
                 ),
-                
                 html.H2("Github Actions Quota"),
                 dcc.Graph(
                     figure=figure_service.get_github_actions_quota_usage_cumulative()[0],
@@ -127,7 +129,6 @@ def create_dashboard(figure_service: FigureService):
                         "display": "inline-block",
                     },
                 ),
-
 
                 html.H1("🙈 Stub Data 🙈"),
                 dcc.Graph(
