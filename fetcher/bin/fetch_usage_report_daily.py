@@ -27,7 +27,7 @@ def fetch_usage_report_daily():
     github_token = _get_environment_variables()
     github_service = GithubService(github_token)
     yesterday_date = (datetime.today() - timedelta(days=1)).date()
-    report_usage_data = github_service.get_current_daily_usage_for_enterprise(day=yesterday_date.day)
+    report_usage_data = github_service.get_current_daily_usage_for_enterprise(month=yesterday_date.month, day=yesterday_date.day)
 
     KpiService(os.getenv("KPI_DASHBOARD_URL"), os.getenv("KPI_DASHBOARD_API_KEY")).track_github_usage_report_daily(str(yesterday_date), json.dumps(report_usage_data))
 

@@ -159,11 +159,11 @@ class GithubService:
         raise ValueError(
             f"Failed to get details for {run_id} in repository {repo_name}. Response status code: {response.status_code}")
 
-    def get_current_daily_usage_for_enterprise(self, day: int) -> dict:
+    def get_current_daily_usage_for_enterprise(self, day: int, month: int) -> dict:
 
         logging.info("Retrieving the daily usage billing report for the enterprise %s", self.enterprise_name)
         response_okay = 200
-        url = f"https://api.github.com/enterprises/{self.enterprise_name}/settings/billing/usage?day={day}"
+        url = f"https://api.github.com/enterprises/{self.enterprise_name}/settings/billing/usage?month={month}&day={day}"
 
         response = self.github_client_rest_api.get(url, timeout=10)
         if response.status_code == response_okay:
