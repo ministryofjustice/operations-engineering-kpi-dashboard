@@ -277,7 +277,7 @@ class TestGithubService:
 
         mock_get_request = mocker.patch.object(
             self.gh_service.github_client_rest_api, "get", return_value=mock_response)
-        result = self.gh_service.get_current_daily_usage_for_enterprise(day=11)
+        result = self.gh_service.get_current_daily_usage_for_enterprise(month=1, day=11)
 
         assert result == {
             "usageItems": [ {
@@ -291,7 +291,7 @@ class TestGithubService:
             }
 
         mock_get_request.assert_called_with(
-            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?day=11", timeout=10
+            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?month=1&day=11", timeout=10
         )
 
     def test_get_current_daily_usage_for_enterprise_error(self, mocker):
@@ -303,12 +303,12 @@ class TestGithubService:
             self.gh_service.github_client_rest_api, "get", return_value=mock_response)
 
         with pytest.raises(ValueError) as err:
-            self.gh_service.get_current_daily_usage_for_enterprise(day=11)
+            self.gh_service.get_current_daily_usage_for_enterprise(month=1, day=11)
 
         assert str(err.value) == (
             "Failed to get usage report for the enterprise ministry-of-justice-uk"
         )
         mock_get_request.call_count == 3
         mock_get_request.assert_called_with(
-            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?day=11", timeout=10
+            "https://api.github.com/enterprises/ministry-of-justice-uk/settings/billing/usage?month=1&day=11", timeout=10
         )

@@ -53,5 +53,5 @@ class TestFetchGithubActionsQuota:
         yesterday = (datetime.today() - timedelta(days=1)).date()
 
         mock_get_environment_variables.assert_called_once()
-        mock_get_current_daily_usage_for_enterprise.assert_called_with(day=yesterday.day)
+        mock_get_current_daily_usage_for_enterprise.assert_called_with(month=yesterday.month, day=yesterday.day)
         mock_kpi_service.assert_called_once_with(str(yesterday), json.dumps(mock_report_usage_data))
