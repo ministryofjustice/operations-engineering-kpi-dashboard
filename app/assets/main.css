@@ -9,3 +9,27 @@ h1 {
     padding-top: 20px;
     margin-top: 0px;
 }
+
+/* Style for dropdown */
+.Select-control {
+    background-color: black !important;
+    color: white !important;
+    border: 1px solid white !important;
+    width: 300px;
+}
+.Select-placeholder {
+    color: white !important ;
+}
+.Select-value-label {
+    background-color: black !important;
+    color: white !important;
+}
+.VirtualizedSelectOption {
+    background-color: black !important;
+    color: white !important;
+}
+.VirtualizedSelectOption:hover {
+    background-color: white !important;
+    color: black !important;
+}
+
