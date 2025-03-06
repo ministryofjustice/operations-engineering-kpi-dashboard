@@ -60,6 +60,14 @@ def create_app() -> Flask:
 
 def create_dashboard(figure_service: FigureService):
     def dashboard():
+        available_gh_usage_years = figure_service.database_service.get_github_usage_available_years()
+        available_gh_usage_years_int = [int(row[0]) for row in available_gh_usage_years]
+        available_gh_usage_months = figure_service.database_service.get_github_usage_available_months()
+        available_gh_usage_months_int = [int(row[0]) for row in available_gh_usage_months]
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        moj_organisations = ["ministryofjustice", "moj-analytical-services",
+                             "CriminalInjuriesCompensationAuthority"]
         return html.Div(
             children=[
                 html.H1("🤩 Live Data 🤩"),
@@ -112,6 +120,7 @@ def create_dashboard(figure_service: FigureService):
                         "display": "inline-block",
                     },
                 ),
+
                 html.H2("Github Actions Quota"),
                 dcc.Graph(
                     figure=figure_service.get_github_actions_quota_usage_cumulative()[0],
@@ -129,6 +138,61 @@ def create_dashboard(figure_service: FigureService):
                         "display": "inline-block",
                     },
                 ),
+                html.H2("Github Actions Spending"),
+                html.Div([
+                    html.Label("Year:", style={'color': 'white', 'fontWeight': 'bold'}),
+                    dcc.Dropdown(
+                        options=[{'label': str(year), 'value': year} for year in available_gh_usage_years_int],
+                        value=current_year,
+                        placeholder="Select a year",
+                        style={'width': '200px', 'margin-right': '20px'}),
+                    
+                    html.Label("Month:", style={'color': 'white', 'fontWeight': 'bold'}),
+                    dcc.Dropdown(
+                        options=[{'label': 'All', 'value': 'all'}] + [
+                            {'label': str(month), 'value': month} for month in available_gh_usage_months_int],
+                        value=current_month,
+                        placeholder="Select a month",
+                        style={'width': '200px'}
+                        ),
+                    ],
+                        style={'display': 'flex', 'align-items': 'center'}),
+                dcc.Graph(
+                    figure=figure_service.get_gh_minutes_spending_charts(
+                        current_year, current_month)[0],
+                    style={
+                        "width": "30%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                dcc.Graph(
+                    figure=figure_service.get_gh_minutes_spending_charts(
+                        current_year, current_month)[1],
+                    style={
+                        "width": "70%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                html.Div([
+                    html.Label("Organisation:", style={'color': 'white', 'fontWeight': 'bold'}),
+                    dcc.Dropdown(
+                        options=[{'label': org, 'value': org} for org in moj_organisations],
+                        value=moj_organisations[0],
+                        placeholder="Select an organisation",
+                        style={'width': '200px', 'margin-right': '20px'}
+                        ),
+                    dcc.Graph(
+                        figure=figure_service.get_gh_minutes_spending_charts(
+                            current_year, current_month, moj_organisations[0])[2],
+                        style={
+                            "width": "100%",
+                             "height": "500px",
+                            "display": "inline-block",
+                        },
+                    ),
+                    ], style={'display': 'flex', 'flexDirection': 'column'}),
 
                 html.H1("🙈 Stub Data 🙈"),
                 dcc.Graph(

@@ -43,8 +43,7 @@ class FigureService:
             y="count",
             title="🏷️ Number of Repositories With Standards Label",
             markers=True,
-            template="plotly_dark",
-        )
+            template="plotly_dark",        )
         fig_stubbed_number_of_repositories_with_standards_label.add_hline(y=0)
 
         return fig_stubbed_number_of_repositories_with_standards_label
@@ -253,6 +252,84 @@ class FigureService:
             )
 
         return fig_github_actions_quota_usage_cumulative, fig_github_actions_quota_usage_daily
+
+    def get_gh_minutes_spending_charts(self, year: int, month: int, org_per_repo: str = None):
+        data_usage_df = pd.DataFrame(
+            self.database_service.get_github_usage_report(year, month),
+            columns=["report_date", "created_at", "report_usage_data"]
+            ).sort_values(by="report_date", ascending=True)
+
+        if data_usage_df.empty:
+            return None, None
+
+        data_usage_df['usageItems'] = data_usage_df['report_usage_data'].apply(lambda x: x['usageItems'])
+        df_filtered = data_usage_df[data_usage_df['usageItems'].apply(lambda x: len(x) > 0)]
+
+        if df_filtered.empty:
+            return None, None, None
+
+        df_exploded = df_filtered.explode('usageItems')
+        df_normalized = pd.json_normalize(df_exploded['usageItems'])
+        df_total_gh_usage = df_exploded[['report_date', 'created_at']].reset_index(drop=True).join(df_normalized)
+        df_gh_minutes_usage = df_total_gh_usage.loc[df_total_gh_usage['unitType'] == 'Minutes']
+
+        repos_list = [repo[0] for repo in self.database_service.get_private_internal_repos()]
+        df_gh_minutes_paid = df_gh_minutes_usage.loc[df_gh_minutes_usage['repositoryName'].isin(repos_list)]
+
+        if df_gh_minutes_paid.empty:
+            return None, None, None
+
+        df_gh_minutes_by_org_daily = df_gh_minutes_paid.groupby([
+            'report_date', 'organizationName'])['grossAmount'].sum().reset_index().sort_values(by=['report_date'])
+
+        df_gh_minutes_org_totals = df_gh_minutes_paid.groupby('organizationName')['grossAmount'].sum().reset_index()
+
+        df_org_per_repo = df_gh_minutes_paid.loc[df_gh_minutes_paid['organizationName']==org_per_repo]
+
+        df_org_per_repo_group = df_org_per_repo.groupby(['repositoryName'])['grossAmount'].sum().reset_index()
+        df_org_per_repo_group = df_org_per_repo_group.sort_values(by=['grossAmount'], ascending=False)
+
+        fig_gh_minutes_org_totals = px.pie(
+            df_gh_minutes_org_totals,
+            names='organizationName',
+            values='grossAmount',
+            title='Github Action Gross Spending by Organisation',
+            template="plotly_dark",
+            labels={
+                "organizationName": "Organisation",
+                "grossAmount": "Spending (USD)"
+                }
+            )
+
+        fig_gh_miniutes_by_org = px.area(
+            df_gh_minutes_by_org_daily,
+            x="report_date",
+            y="grossAmount",
+            color="organizationName",
+            title="Github Actions Spending Trends by Organisation",
+            template="plotly_dark",
+            labels={
+                "report_date": "Date",
+                "grossAmount": "Spending (USD)"
+                }
+            )
+
+        fig_per_repo = px.bar(
+            df_org_per_repo_group,
+            x="repositoryName",
+            y="grossAmount",
+            color="repositoryName",
+            title="Github Actions Spending by Repository",
+            template="plotly_dark",
+            labels={
+                "repositoryName": "Repository",
+                "grossAmount": "Spending (USD)"
+                }
+            )
+
+        fig_per_repo.update_xaxes(showticklabels=False)
+
+        return fig_gh_minutes_org_totals, fig_gh_miniutes_by_org, fig_per_repo
 
     def get_sentry_transactions_usage(self):
         sentry_transaction_quota_consumed = pd.DataFrame(

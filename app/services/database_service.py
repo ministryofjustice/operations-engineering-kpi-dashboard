@@ -56,7 +56,7 @@ class DatabaseService:
                         report_usage_data JSONB NOT NULL
                     )
             """
-        )
+            )
 
     def create_github_repos_meteadata_table(self) -> None:
         self.__execute_query(
@@ -69,7 +69,56 @@ class DatabaseService:
                         visibility VARCHAR NOT NULL
                     )
             """
+            )
+
+    def get_private_internal_repos(self) ->list[tuple[Any, Any]]:
+        return self.__execute_query(
+            sql="""
+                SELECT name
+                FROM github_repos_metadata
+                WHERE visibility = 'private'
+                OR visibility = 'internal'
+                """
+                )
+
+    def get_github_usage_available_years(self) -> list[tuple[Any, Any]]: 
+        return self.__execute_query(
+            sql="""
+                SELECT DISTINCT EXTRACT(YEAR FROM report_date) AS report_year
+                FROM github_usage_reports
+                ORDER BY report_year;
+            """
+            )
+
+    def get_github_usage_available_months(self) -> list[tuple[Any, Any]]: 
+        return self.__execute_query(
+            sql="""
+                SELECT DISTINCT EXTRACT(MONTH FROM report_date) AS report_month
+                FROM github_usage_reports
+                ORDER BY report_month;
+            """
         )
+
+    def get_github_usage_report(self, year: int, month: int) -> list[tuple[Any, Any]]:
+
+        if month == "all":
+            return self.__execute_query(
+                sql="""
+                SELECT report_date, created_at, report_usage_data
+                FROM github_usage_reports
+                WHERE EXTRACT(YEAR FROM report_date) = %s
+                """,
+                values=(year,))
+
+        else:
+            return self.__execute_query(
+                sql="""
+                SELECT report_date, created_at, report_usage_data
+                FROM github_usage_reports
+                WHERE EXTRACT(YEAR FROM report_date) = %s
+                    AND EXTRACT(MONTH FROM report_date) = %s
+                """,
+                values=(year, month))
 
     def clean_stubbed_indicators_table(self) -> None:
         self.__execute_query(sql="DELETE FROM indicators WHERE indicator LIKE 'STUBBED%'")
