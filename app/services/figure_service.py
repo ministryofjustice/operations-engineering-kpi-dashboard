@@ -306,7 +306,7 @@ class FigureService:
             x="report_date",
             y="grossAmount",
             color="organizationName",
-            title="Github Actions Spending Trends by Organisation", 
+            title="Github Actions Spending Trends by Organisation",
             template="plotly_dark",
             labels={
                 "report_date": "Date",
@@ -319,7 +319,7 @@ class FigureService:
             x="repositoryName",
             y="grossAmount",
             color="repositoryName",
-            title="Github Actions Spending per Repository",
+            title="Github Actions Spending by Repository",
             template="plotly_dark",
             labels={
                 "repositoryName": "Repository",
