@@ -1,5 +1,5 @@
 import logging
-
+from typing import Union
 import pandas as pd
 from datetime import date, timedelta
 import plotly.express as px
@@ -253,20 +253,36 @@ class FigureService:
 
         return fig_github_actions_quota_usage_cumulative, fig_github_actions_quota_usage_daily
 
-    def get_gh_minutes_spending_charts(self, year: int, month: int, org_per_repo: str = None):
+    def get_gh_minutes_spending_charts(self, year: int, month: Union[int, str], org_per_repo: str = None):
+
+        def return_empty_graphs():
+            empty_df = pd.DataFrame({'x': [], 'y': []})
+
+            empty_pie_chart = px.pie(empty_df, names='x', values='y',
+                                     template="plotly_dark",
+                                     title='No Data Available')
+            empty_area_chart = px.area(empty_df, x='x', y='y',
+                                       template="plotly_dark",
+                                       title='No Data Available')
+            empty_bar_chart = px.bar(empty_df, x='x', y='y',
+                                     template="plotly_dark",
+                                     title='No Data Available')
+
+            return empty_pie_chart, empty_area_chart, empty_bar_chart
+
         data_usage_df = pd.DataFrame(
             self.database_service.get_github_usage_report(year, month),
             columns=["report_date", "created_at", "report_usage_data"]
             ).sort_values(by="report_date", ascending=True)
 
         if data_usage_df.empty:
-            return None, None
+            return return_empty_graphs()
 
         data_usage_df['usageItems'] = data_usage_df['report_usage_data'].apply(lambda x: x['usageItems'])
         df_filtered = data_usage_df[data_usage_df['usageItems'].apply(lambda x: len(x) > 0)]
 
         if df_filtered.empty:
-            return None, None, None
+            return return_empty_graphs()
 
         df_exploded = df_filtered.explode('usageItems')
         df_normalized = pd.json_normalize(df_exploded['usageItems'])
@@ -277,7 +293,7 @@ class FigureService:
         df_gh_minutes_paid = df_gh_minutes_usage.loc[df_gh_minutes_usage['repositoryName'].isin(repos_list)]
 
         if df_gh_minutes_paid.empty:
-            return None, None, None
+            return return_empty_graphs()
 
         df_gh_minutes_by_org_daily = df_gh_minutes_paid.groupby([
             'report_date', 'organizationName'])['grossAmount'].sum().reset_index().sort_values(by=['report_date'])
