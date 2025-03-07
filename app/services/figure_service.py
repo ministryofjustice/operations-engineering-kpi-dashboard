@@ -1,5 +1,5 @@
 import logging
-
+from typing import Union
 import pandas as pd
 from datetime import date, timedelta
 import plotly.express as px
@@ -253,7 +253,7 @@ class FigureService:
 
         return fig_github_actions_quota_usage_cumulative, fig_github_actions_quota_usage_daily
 
-    def get_gh_minutes_spending_charts(self, year: int, month: int, org_per_repo: str = None):
+    def get_gh_minutes_spending_charts(self, year: int, month: Union[int, str], org_per_repo: str = None):
 
         def return_empty_graphs():
             empty_df = pd.DataFrame({'x': [], 'y': []})

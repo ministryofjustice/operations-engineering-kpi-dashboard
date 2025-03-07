@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Any
+from typing import Any, Union
 
 import psycopg2
 
@@ -99,7 +99,7 @@ class DatabaseService:
             """
         )
 
-    def get_github_usage_report(self, year: int, month: int) -> list[tuple[Any, Any]]:
+    def get_github_usage_report(self, year: int, month: Union[str,int]) -> list[tuple[Any, Any]]:
 
         if month == "all":
             return self.__execute_query(
