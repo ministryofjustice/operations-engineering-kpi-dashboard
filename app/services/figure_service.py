@@ -3,6 +3,7 @@ from typing import Union
 import pandas as pd
 from datetime import date, timedelta
 import plotly.express as px
+import plotly.graph_objects as go
 
 logger = logging.getLogger(__name__)
 
@@ -258,6 +259,14 @@ class FigureService:
         def return_empty_graphs():
             empty_df = pd.DataFrame({'x': [], 'y': []})
 
+            empty_total_chart = go.Figure(go.Indicator(
+                mode="number+delta",
+                value=None,  # No value, making it empty
+                number={'prefix': "$"},
+                delta={'position': "top", 'reference': 320},
+                domain={'x': [0, 1], 'y': [0, 1]}
+                ))
+            
             empty_pie_chart = px.pie(empty_df, names='x', values='y',
                                      template="plotly_dark",
                                      title='No Data Available')
@@ -268,7 +277,12 @@ class FigureService:
                                      template="plotly_dark",
                                      title='No Data Available')
 
-            return empty_pie_chart, empty_area_chart, empty_bar_chart
+            return {
+                'total_spending_chart': empty_total_chart,
+                'pie_chart_gross_spending': empty_pie_chart,
+                'area_chart_spending_trends': empty_area_chart,
+                'bar_chart_repository_spending': empty_bar_chart
+                }
 
         data_usage_df = pd.DataFrame(
             self.database_service.get_github_usage_report(year, month),
@@ -305,11 +319,20 @@ class FigureService:
         df_org_per_repo_group = df_org_per_repo.groupby(['repositoryName'])['grossAmount'].sum().reset_index()
         df_org_per_repo_group = df_org_per_repo_group.sort_values(by=['grossAmount'], ascending=False)
 
+        fig_total = go.Figure(go.Indicator(
+            mode="number+delta",
+            value=df_gh_minutes_paid["grossAmount"].sum(),
+            number={"prefix": "$"},
+            domain={"x": [0, 1], "y": [0, 1]}))
+        fig_total.update_layout(
+            template="plotly_dark",
+            title="Total Gross Amount" )
+
         fig_gh_minutes_org_totals = px.pie(
             df_gh_minutes_org_totals,
-            names='organizationName',
-            values='grossAmount',
-            title='Github Action Gross Spending by Organisation',
+            names="organizationName",
+            values="grossAmount",
+            title="Github Action Gross Spending by Organisation",
             template="plotly_dark",
             labels={
                 "organizationName": "Organisation",
@@ -345,7 +368,12 @@ class FigureService:
 
         fig_per_repo.update_xaxes(showticklabels=False)
 
-        return fig_gh_minutes_org_totals, fig_gh_miniutes_by_org, fig_per_repo
+        return {
+            "total_spending_chart": fig_total,
+            "pie_chart_gross_spending": fig_gh_minutes_org_totals,
+            "area_chart_spending_trends": fig_gh_miniutes_by_org,
+            "bar_chart_repository_spending": fig_per_repo
+            }
 
     def get_sentry_transactions_usage(self):
         sentry_transaction_quota_consumed = pd.DataFrame(
