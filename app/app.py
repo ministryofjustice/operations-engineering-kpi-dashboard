@@ -1,10 +1,8 @@
 import logging
 from datetime import datetime
 from dash import Dash, dcc, html
-from dash.exceptions import PreventUpdate
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from dash_auth import OIDCAuth, add_public_routes
-import plotly.express as px
 from flask import Flask
 
 from app.config.app_config import app_config
