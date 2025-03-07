@@ -1,7 +1,10 @@
 import logging
 from datetime import datetime
 from dash import Dash, dcc, html
+from dash.exceptions import PreventUpdate
+from dash.dependencies import Input, Output, State
 from dash_auth import OIDCAuth, add_public_routes
+import plotly.express as px
 from flask import Flask
 
 from app.config.app_config import app_config
@@ -34,7 +37,7 @@ def create_app() -> Flask:
 
     app = Dash(__name__, server=server, url_base_pathname="/dashboard/")
     app.title = "⚙️ OE - KPI Dashboard"
-    app.layout = create_dashboard(server.figure_service)
+    app.layout = create_dashboard(server.figure_service, app)
 
     if app_config.auth_enabled:
         auth = OIDCAuth(
@@ -58,7 +61,7 @@ def create_app() -> Flask:
     return app.server
 
 
-def create_dashboard(figure_service: FigureService):
+def create_dashboard(figure_service: FigureService, app: Dash):
     def dashboard():
         available_gh_usage_years = figure_service.database_service.get_github_usage_available_years()
         available_gh_usage_years_int = [int(row[0]) for row in available_gh_usage_years]
@@ -142,15 +145,17 @@ def create_dashboard(figure_service: FigureService):
                 html.Div([
                     html.Label("Year:", style={'color': 'white', 'fontWeight': 'bold'}),
                     dcc.Dropdown(
-                        options=[{'label': str(year), 'value': year} for year in available_gh_usage_years_int],
+                        id='year-dropdown',
+                        options=[{'label': year, 'value': year} for year in available_gh_usage_years_int],
                         value=current_year,
                         placeholder="Select a year",
                         style={'width': '200px', 'margin-right': '20px'}),
-                    
+
                     html.Label("Month:", style={'color': 'white', 'fontWeight': 'bold'}),
                     dcc.Dropdown(
+                        id='month-dropdown',
                         options=[{'label': 'All', 'value': 'all'}] + [
-                            {'label': str(month), 'value': month} for month in available_gh_usage_months_int],
+                            {'label': month, 'value': month} for month in available_gh_usage_months_int],
                         value=current_month,
                         placeholder="Select a month",
                         style={'width': '200px'}
@@ -158,6 +163,7 @@ def create_dashboard(figure_service: FigureService):
                     ],
                         style={'display': 'flex', 'align-items': 'center'}),
                 dcc.Graph(
+                    id="gh-minutes-gross-spending-graph",
                     figure=figure_service.get_gh_minutes_spending_charts(
                         current_year, current_month)[0],
                     style={
@@ -167,6 +173,7 @@ def create_dashboard(figure_service: FigureService):
                     },
                 ),
                 dcc.Graph(
+                    id="gh-minutes-trends-graph",
                     figure=figure_service.get_gh_minutes_spending_charts(
                         current_year, current_month)[1],
                     style={
@@ -178,17 +185,19 @@ def create_dashboard(figure_service: FigureService):
                 html.Div([
                     html.Label("Organisation:", style={'color': 'white', 'fontWeight': 'bold'}),
                     dcc.Dropdown(
+                        id="organisation-dropdown",
                         options=[{'label': org, 'value': org} for org in moj_organisations],
                         value=moj_organisations[0],
                         placeholder="Select an organisation",
                         style={'width': '200px', 'margin-right': '20px'}
                         ),
                     dcc.Graph(
+                        id="gh-minutes-repositories-spending-graph",
                         figure=figure_service.get_gh_minutes_spending_charts(
                             current_year, current_month, moj_organisations[0])[2],
                         style={
                             "width": "100%",
-                             "height": "500px",
+                            "height": "500px",
                             "display": "inline-block",
                         },
                     ),
@@ -230,5 +239,21 @@ def create_dashboard(figure_service: FigureService):
             ],
             style={"padding": "0px", "margin": "0px", "background-color": "black"},
         )
+
+    @app.callback(
+        [Output("gh-minutes-gross-spending-graph", "figure"),
+         Output("gh-minutes-trends-graph", "figure"),
+         Output("gh-minutes-repositories-spending-graph", "figure")
+        ],
+        [Input("month-dropdown", "value"),
+         Input("year-dropdown", "value"),
+         Input("organisation-dropdown", "value")]
+        )
+    def update_github_spending_graphs(selected_month, selected_year, selected_organisation):
+
+        gross_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month)[0]
+        trends_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month)[1]
+        repo_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month, selected_organisation)[2]
+        return gross_spending_fig, trends_fig, repo_spending_fig,
 
     return dashboard
