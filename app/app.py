@@ -161,11 +161,21 @@ def create_dashboard(figure_service: FigureService, app: Dash):
                     ],
                         style={'display': 'flex', 'align-items': 'center'}),
                 dcc.Graph(
+                    id="gh-spending-total",
+                    figure=figure_service.get_gh_minutes_spending_charts(
+                        current_year, current_month).get('total_spending_chart'),
+                    style={
+                        "width": "50%",
+                        "height": "500px",
+                        "display": "inline-block",
+                    },
+                ),
+                dcc.Graph(
                     id="gh-minutes-gross-spending-graph",
                     figure=figure_service.get_gh_minutes_spending_charts(
-                        current_year, current_month)[0],
+                        current_year, current_month).get('pie_chart_gross_spending'),
                     style={
-                        "width": "30%",
+                        "width": "50%",
                         "height": "500px",
                         "display": "inline-block",
                     },
@@ -173,9 +183,9 @@ def create_dashboard(figure_service: FigureService, app: Dash):
                 dcc.Graph(
                     id="gh-minutes-trends-graph",
                     figure=figure_service.get_gh_minutes_spending_charts(
-                        current_year, current_month)[1],
+                        current_year, current_month).get('area_chart_spending_trends'),
                     style={
-                        "width": "70%",
+                        "width": "100%",
                         "height": "500px",
                         "display": "inline-block",
                     },
@@ -192,7 +202,7 @@ def create_dashboard(figure_service: FigureService, app: Dash):
                     dcc.Graph(
                         id="gh-minutes-repositories-spending-graph",
                         figure=figure_service.get_gh_minutes_spending_charts(
-                            current_year, current_month, moj_organisations[0])[2],
+                            current_year, current_month, moj_organisations[0]).get('bar_chart_repository_spending'),
                         style={
                             "width": "100%",
                             "height": "500px",
@@ -239,9 +249,10 @@ def create_dashboard(figure_service: FigureService, app: Dash):
         )
 
     @app.callback(
-        [Output("gh-minutes-gross-spending-graph", "figure"),
+        [Output("gh-spending-total", "figure"),
+         Output("gh-minutes-gross-spending-graph", "figure"),
          Output("gh-minutes-trends-graph", "figure"),
-         Output("gh-minutes-repositories-spending-graph", "figure")
+         Output("gh-minutes-repositories-spending-graph", "figure"),
         ],
         [Input("month-dropdown", "value"),
          Input("year-dropdown", "value"),
@@ -249,9 +260,10 @@ def create_dashboard(figure_service: FigureService, app: Dash):
         )
     def update_github_spending_graphs(selected_month, selected_year, selected_organisation):
 
-        gross_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month)[0]
-        trends_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month)[1]
-        repo_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month, selected_organisation)[2]
-        return gross_spending_fig, trends_fig, repo_spending_fig,
+        total_spending = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month).get('total_spending_chart')
+        gross_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month).get('pie_chart_gross_spending')
+        trends_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month).get('area_chart_spending_trends')
+        repo_spending_fig = figure_service.get_gh_minutes_spending_charts(selected_year, selected_month, selected_organisation).get('bar_chart_repository_spending')
+        return total_spending, gross_spending_fig, trends_fig, repo_spending_fig
 
     return dashboard
