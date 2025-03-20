@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 import pandas as pd
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -44,7 +44,8 @@ class FigureService:
             y="count",
             title="🏷️ Number of Repositories With Standards Label",
             markers=True,
-            template="plotly_dark",        )
+            template="plotly_dark",
+        )
         fig_stubbed_number_of_repositories_with_standards_label.add_hline(y=0)
 
         return fig_stubbed_number_of_repositories_with_standards_label
@@ -140,13 +141,13 @@ class FigureService:
         support_requests_all = (
             support_requests_all.groupby(by=["Date", "Type"])
             .size()
-            .reset_index(name="Count")
+            .reset_index(name="count")
         )
 
-        fig_support_stats_year_to_date = px.line(
+        fig_support_stats_year_to_date = px.bar(
             support_requests_all,
             x="Date",
-            y="Count",
+            y="count",
             color="Type",
             title="Support Requests by Type - Year to Date",
             template="plotly_dark",
@@ -201,36 +202,39 @@ class FigureService:
             y=50000,
             line=dict(color="red", dash="dash"),
             annotation_text="Minutes allowance",
-            annotation_position="top right"
+            annotation_position="top right",
         )
-        fig_github_actions_quota_usage_cumulative.update_layout(
-            yaxis_title="Min used"
-        )
+        fig_github_actions_quota_usage_cumulative.update_layout(yaxis_title="Min used")
 
-        if github_actions_quota_usage_cumulative.shape[0] < 1: 
+        if github_actions_quota_usage_cumulative.shape[0] < 1:
             return fig_github_actions_quota_usage_cumulative, None
 
         # Add quota reset lines
-        start_date = github_actions_quota_usage_cumulative['timestamp'].min().date()
-        end_date = github_actions_quota_usage_cumulative['timestamp'].max().date()
-        max_y = github_actions_quota_usage_cumulative['count'].max()
+        start_date = github_actions_quota_usage_cumulative["timestamp"].min().date()
+        end_date = github_actions_quota_usage_cumulative["timestamp"].max().date()
+        max_y = github_actions_quota_usage_cumulative["count"].max()
 
-        start_days_quota = pd.date_range(start=start_date, end=end_date, freq='MS')
+        start_days_quota = pd.date_range(start=start_date, end=end_date, freq="MS")
 
         for day in start_days_quota:
             fig_github_actions_quota_usage_cumulative.add_vline(
-                x=day,
-                line_dash="dash",
-                line_color="white"
-                )
+                x=day, line_dash="dash", line_color="white"
+            )
             fig_github_actions_quota_usage_cumulative.add_annotation(
-                x=day, y=max_y, text="Quota Reset", ax=-25)
+                x=day, y=max_y, text="Quota Reset", ax=-25
+            )
 
         # Daily gha consumption graph
         github_actions_quota_usage_daily = github_actions_quota_usage_cumulative.copy()
-        github_actions_quota_usage_daily['Month'] = github_actions_quota_usage_daily['timestamp'].dt.to_period('M')
-        github_actions_quota_usage_daily['Daily_minutes'] = github_actions_quota_usage_daily.groupby('Month')['count'].diff()
-        github_actions_quota_usage_daily['Date'] = (github_actions_quota_usage_daily['timestamp'] - timedelta(days=1)).dt.date
+        github_actions_quota_usage_daily["Month"] = github_actions_quota_usage_daily[
+            "timestamp"
+        ].dt.to_period("M")
+        github_actions_quota_usage_daily["Daily_minutes"] = (
+            github_actions_quota_usage_daily.groupby("Month")["count"].diff()
+        )
+        github_actions_quota_usage_daily["Date"] = (
+            github_actions_quota_usage_daily["timestamp"] - timedelta(days=1)
+        ).dt.date
 
         github_actions_quota_usage_daily = github_actions_quota_usage_daily.dropna()
 
@@ -241,92 +245,142 @@ class FigureService:
             title="Daily Github Actions Usage",
             template="plotly_dark",
         )
-        fig_github_actions_quota_usage_daily.update_layout(
-            yaxis_title="Min used"
-        )
+        fig_github_actions_quota_usage_daily.update_layout(yaxis_title="Min used")
         if github_actions_quota_usage_daily.shape[0] > 0:
             fig_github_actions_quota_usage_daily.add_hline(
-                y=github_actions_quota_usage_daily['Daily_minutes'].median(),
+                y=github_actions_quota_usage_daily["Daily_minutes"].median(),
                 line=dict(color="red", dash="dash"),  # Custom line style
                 annotation_text="Median",
-                annotation_position="top right"
+                annotation_position="top right",
             )
 
-        return fig_github_actions_quota_usage_cumulative, fig_github_actions_quota_usage_daily
+        return (
+            fig_github_actions_quota_usage_cumulative,
+            fig_github_actions_quota_usage_daily,
+        )
 
-    def get_gh_minutes_spending_charts(self, year: int, month: Union[int, str], org_per_repo: str = None):
+    def get_gh_minutes_spending_charts(
+        self, year: int, month: Union[int, str], org_per_repo: str = None
+    ):
 
         def return_empty_graphs():
-            empty_df = pd.DataFrame({'x': [], 'y': []})
+            empty_df = pd.DataFrame({"x": [], "y": []})
 
-            empty_total_chart = go.Figure(go.Indicator(
-                mode="number+delta",
-                value=None,  # No value, making it empty
-                number={'prefix': "$"},
-                delta={'position': "top", 'reference': 320},
-                domain={'x': [0, 1], 'y': [0, 1]}
-                ))
-            
-            empty_pie_chart = px.pie(empty_df, names='x', values='y',
-                                     template="plotly_dark",
-                                     title='No Data Available')
-            empty_area_chart = px.area(empty_df, x='x', y='y',
-                                       template="plotly_dark",
-                                       title='No Data Available')
-            empty_bar_chart = px.bar(empty_df, x='x', y='y',
-                                     template="plotly_dark",
-                                     title='No Data Available')
+            empty_total_chart = go.Figure(
+                go.Indicator(
+                    mode="number+delta",
+                    value=None,  # No value, making it empty
+                    number={"prefix": "$"},
+                    delta={"position": "top", "reference": 320},
+                    domain={"x": [0, 1], "y": [0, 1]},
+                )
+            )
+
+            empty_pie_chart = px.pie(
+                empty_df,
+                names="x",
+                values="y",
+                template="plotly_dark",
+                title="No Data Available",
+            )
+            empty_area_chart = px.area(
+                empty_df,
+                x="x",
+                y="y",
+                template="plotly_dark",
+                title="No Data Available",
+            )
+            empty_bar_chart = px.bar(
+                empty_df,
+                x="x",
+                y="y",
+                template="plotly_dark",
+                title="No Data Available",
+            )
 
             return {
-                'total_spending_chart': empty_total_chart,
-                'pie_chart_gross_spending': empty_pie_chart,
-                'area_chart_spending_trends': empty_area_chart,
-                'bar_chart_repository_spending': empty_bar_chart
-                }
+                "total_spending_chart": empty_total_chart,
+                "pie_chart_gross_spending": empty_pie_chart,
+                "area_chart_spending_trends": empty_area_chart,
+                "bar_chart_repository_spending": empty_bar_chart,
+            }
 
         data_usage_df = pd.DataFrame(
             self.database_service.get_github_usage_report(year, month),
-            columns=["report_date", "created_at", "report_usage_data"]
-            ).sort_values(by="report_date", ascending=True)
+            columns=["report_date", "created_at", "report_usage_data"],
+        ).sort_values(by="report_date", ascending=True)
 
         if data_usage_df.empty:
             return return_empty_graphs()
 
-        data_usage_df['usageItems'] = data_usage_df['report_usage_data'].apply(lambda x: x['usageItems'])
-        df_filtered = data_usage_df[data_usage_df['usageItems'].apply(lambda x: len(x) > 0)]
+        data_usage_df["usageItems"] = data_usage_df["report_usage_data"].apply(
+            lambda x: x["usageItems"]
+        )
+        df_filtered = data_usage_df[
+            data_usage_df["usageItems"].apply(lambda x: len(x) > 0)
+        ]
 
         if df_filtered.empty:
             return return_empty_graphs()
 
-        df_exploded = df_filtered.explode('usageItems')
-        df_normalized = pd.json_normalize(df_exploded['usageItems'])
-        df_total_gh_usage = df_exploded[['report_date', 'created_at']].reset_index(drop=True).join(df_normalized)
-        df_gh_minutes_usage = df_total_gh_usage.loc[df_total_gh_usage['unitType'] == 'Minutes']
+        df_exploded = df_filtered.explode("usageItems")
+        df_normalized = pd.json_normalize(df_exploded["usageItems"])
+        df_total_gh_usage = (
+            df_exploded[["report_date", "created_at"]]
+            .reset_index(drop=True)
+            .join(df_normalized)
+        )
+        df_gh_minutes_usage = df_total_gh_usage.loc[
+            df_total_gh_usage["unitType"] == "Minutes"
+        ]
 
-        repos_list = [repo[0] for repo in self.database_service.get_private_internal_repos()]
-        df_gh_minutes_paid = df_gh_minutes_usage.loc[df_gh_minutes_usage['repositoryName'].isin(repos_list)]
+        repos_list = [
+            repo[0] for repo in self.database_service.get_private_internal_repos()
+        ]
+        df_gh_minutes_paid = df_gh_minutes_usage.loc[
+            df_gh_minutes_usage["repositoryName"].isin(repos_list)
+        ]
 
         if df_gh_minutes_paid.empty:
             return return_empty_graphs()
 
-        df_gh_minutes_by_org_daily = df_gh_minutes_paid.groupby([
-            'report_date', 'organizationName'])['grossAmount'].sum().reset_index().sort_values(by=['report_date'])
+        df_gh_minutes_by_org_daily = (
+            df_gh_minutes_paid.groupby(["report_date", "organizationName"])[
+                "grossAmount"
+            ]
+            .sum()
+            .reset_index()
+            .sort_values(by=["report_date"])
+        )
 
-        df_gh_minutes_org_totals = df_gh_minutes_paid.groupby('organizationName')['grossAmount'].sum().reset_index()
+        df_gh_minutes_org_totals = (
+            df_gh_minutes_paid.groupby("organizationName")["grossAmount"]
+            .sum()
+            .reset_index()
+        )
 
-        df_org_per_repo = df_gh_minutes_paid.loc[df_gh_minutes_paid['organizationName']==org_per_repo]
+        df_org_per_repo = df_gh_minutes_paid.loc[
+            df_gh_minutes_paid["organizationName"] == org_per_repo
+        ]
 
-        df_org_per_repo_group = df_org_per_repo.groupby(['repositoryName'])['grossAmount'].sum().reset_index()
-        df_org_per_repo_group = df_org_per_repo_group.sort_values(by=['grossAmount'], ascending=False)
+        df_org_per_repo_group = (
+            df_org_per_repo.groupby(["repositoryName"])["grossAmount"]
+            .sum()
+            .reset_index()
+        )
+        df_org_per_repo_group = df_org_per_repo_group.sort_values(
+            by=["grossAmount"], ascending=False
+        )
 
-        fig_total = go.Figure(go.Indicator(
-            mode="number+delta",
-            value=df_gh_minutes_paid["grossAmount"].sum(),
-            number={"prefix": "$"},
-            domain={"x": [0, 1], "y": [0, 1]}))
-        fig_total.update_layout(
-            template="plotly_dark",
-            title="Total Gross Amount" )
+        fig_total = go.Figure(
+            go.Indicator(
+                mode="number+delta",
+                value=df_gh_minutes_paid["grossAmount"].sum(),
+                number={"prefix": "$"},
+                domain={"x": [0, 1], "y": [0, 1]},
+            )
+        )
+        fig_total.update_layout(template="plotly_dark", title="Total Gross Amount")
 
         fig_gh_minutes_org_totals = px.pie(
             df_gh_minutes_org_totals,
@@ -336,9 +390,9 @@ class FigureService:
             template="plotly_dark",
             labels={
                 "organizationName": "Organisation",
-                "grossAmount": "Spending (USD)"
-                }
-            )
+                "grossAmount": "Spending (USD)",
+            },
+        )
 
         fig_gh_miniutes_by_org = px.area(
             df_gh_minutes_by_org_daily,
@@ -347,11 +401,8 @@ class FigureService:
             color="organizationName",
             title="Github Actions Spending Trends by Organisation",
             template="plotly_dark",
-            labels={
-                "report_date": "Date",
-                "grossAmount": "Spending (USD)"
-                }
-            )
+            labels={"report_date": "Date", "grossAmount": "Spending (USD)"},
+        )
 
         fig_per_repo = px.bar(
             df_org_per_repo_group,
@@ -360,11 +411,8 @@ class FigureService:
             color="repositoryName",
             title="Github Actions Spending by Repository",
             template="plotly_dark",
-            labels={
-                "repositoryName": "Repository",
-                "grossAmount": "Spending (USD)"
-                }
-            )
+            labels={"repositoryName": "Repository", "grossAmount": "Spending (USD)"},
+        )
 
         fig_per_repo.update_xaxes(showticklabels=False)
 
@@ -372,8 +420,8 @@ class FigureService:
             "total_spending_chart": fig_total,
             "pie_chart_gross_spending": fig_gh_minutes_org_totals,
             "area_chart_spending_trends": fig_gh_miniutes_by_org,
-            "bar_chart_repository_spending": fig_per_repo
-            }
+            "bar_chart_repository_spending": fig_per_repo,
+        }
 
     def get_sentry_transactions_usage(self):
         sentry_transaction_quota_consumed = pd.DataFrame(
