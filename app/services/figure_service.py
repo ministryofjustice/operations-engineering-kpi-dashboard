@@ -144,6 +144,8 @@ class FigureService:
             .reset_index(name="count")
         )
 
+        include = df[df["Date"].dt.year == year]
+
         fig_support_stats_year_to_date = px.bar(
             support_requests_all,
             x="Date",
