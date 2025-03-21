@@ -137,19 +137,29 @@ class FigureService:
         return fig_support_stats
 
     def get_support_stats_year_to_date(self):
+        current_year = datetime.now().year
+
         support_requests_all = pd.read_csv("production/support_request_stats.csv")
-        support_requests_all = (
-            support_requests_all.groupby(by=["Date", "Type"])
+        support_requests_all["Date"] = pd.to_datetime(support_requests_all["Date"])
+        support_requests_all["Year"] = support_requests_all["Date"].dt.year
+        support_requests_all["Month Number"] = support_requests_all["Date"].dt.month
+        support_requests_all["Month"] = support_requests_all["Date"].dt.month
+        support_requests_all["Month"] = pd.to_datetime(
+            support_requests_all["Month"], format="%m"
+        ).dt.month_name()
+
+        support_requests_filtered = support_requests_all.query("Year == @current_year")
+
+        support_requests_year_to_date = (
+            support_requests_filtered.groupby(by=["Month Number", "Month", "Type"])
             .size()
-            .reset_index(name="count")
+            .reset_index(name="Count")
         )
 
-        include = df[df["Date"].dt.year == year]
-
-        fig_support_stats_year_to_date = px.bar(
-            support_requests_all,
-            x="Date",
-            y="count",
+        fig_support_stats_year_to_date = px.line(
+            support_requests_year_to_date,
+            x="Month",
+            y="Count",
             color="Type",
             title="Support Requests by Type - Year to Date",
             template="plotly_dark",
