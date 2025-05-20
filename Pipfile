@@ -16,6 +16,7 @@ pygithub = "==2.5.0"
 gql = "==3.5.0"
 aiohttp = "==3.11.10"
 gunicorn = "==23.0.0"
+jinja2 = "==3.1.6"
 
 [requires]
 python_version = "3.12"
