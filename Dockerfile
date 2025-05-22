@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12.8-slim-bookworm
 
 LABEL maintainer="operations-engineering <operations-engineering@digital.justice.gov.uk>"
 
