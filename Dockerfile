@@ -1,5 +1,11 @@
 FROM python:3.12.8-slim-bookworm
 
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y perl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 LABEL maintainer="operations-engineering <operations-engineering@digital.justice.gov.uk>"
 
 RUN groupadd -r user && useradd -r -g user 1051
