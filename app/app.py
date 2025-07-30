@@ -24,13 +24,6 @@ def create_app() -> Flask:
 
     configure_routes(server)
 
-    logger.info("Populating stub data...")
-    server.database_service.create_indicators_table()
-    server.database_service.create_github_usage_reports_table()
-    server.database_service.create_github_repos_meteadata_table()
-    server.database_service.clean_stubbed_indicators_table()
-    server.database_service.add_stubbed_indicators()
-
     app = Dash(__name__, server=server, url_base_pathname="/dashboard/")
     app.title = "⚙️ OE - KPI Dashboard"
     app.layout = create_dashboard(server.figure_service, app)
