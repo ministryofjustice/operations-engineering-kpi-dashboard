@@ -73,22 +73,4 @@ def create_dashboard(figure_service: FigureService, app: Dash):
             style={"padding": "0px", "margin": "0px", "background-color": "black"},
         )
 
-    def update_github_spending_graphs(
-        selected_month, selected_year, selected_organisation
-    ):
-
-        total_spending = figure_service.get_gh_minutes_spending_charts(
-            selected_year, selected_month
-        ).get("total_spending_chart")
-        gross_spending_fig = figure_service.get_gh_minutes_spending_charts(
-            selected_year, selected_month
-        ).get("pie_chart_gross_spending")
-        trends_fig = figure_service.get_gh_minutes_spending_charts(
-            selected_year, selected_month
-        ).get("area_chart_spending_trends")
-        repo_spending_fig = figure_service.get_gh_minutes_spending_charts(
-            selected_year, selected_month, selected_organisation
-        ).get("bar_chart_repository_spending")
-        return total_spending, gross_spending_fig, trends_fig, repo_spending_fig
-
     return dashboard
