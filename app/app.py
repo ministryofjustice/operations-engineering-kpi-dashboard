@@ -1,6 +1,5 @@
 import logging
 from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
 from dash_auth import OIDCAuth, add_public_routes
 from flask import Flask
 
@@ -88,19 +87,6 @@ def create_dashboard(figure_service: FigureService, app: Dash):
             style={"padding": "0px", "margin": "0px", "background-color": "black"},
         )
 
-    @app.callback(
-        [
-            Output("gh-spending-total", "figure"),
-            Output("gh-minutes-gross-spending-graph", "figure"),
-            Output("gh-minutes-trends-graph", "figure"),
-            Output("gh-minutes-repositories-spending-graph", "figure"),
-        ],
-        [
-            Input("month-dropdown", "value"),
-            Input("year-dropdown", "value"),
-            Input("organisation-dropdown", "value"),
-        ],
-    )
     def update_github_spending_graphs(
         selected_month, selected_year, selected_organisation
     ):
