@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 from dash_auth import OIDCAuth, add_public_routes
@@ -66,23 +65,6 @@ def create_app() -> Flask:
 
 def create_dashboard(figure_service: FigureService, app: Dash):
     def dashboard():
-        available_gh_usage_years = (
-            figure_service.database_service.get_github_usage_available_years()
-        )
-        available_gh_usage_years_int = [int(row[0]) for row in available_gh_usage_years]
-        available_gh_usage_months = (
-            figure_service.database_service.get_github_usage_available_months()
-        )
-        available_gh_usage_months_int = [
-            int(row[0]) for row in available_gh_usage_months
-        ]
-        current_year = datetime.now().year
-        current_month = datetime.now().month
-        moj_organisations = [
-            "ministryofjustice",
-            "moj-analytical-services",
-            "CriminalInjuriesCompensationAuthority",
-        ]
         return html.Div(
             children=[
                 html.H1("🤩 Live Data 🤩"),
