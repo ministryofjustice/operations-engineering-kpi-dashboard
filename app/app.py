@@ -35,14 +35,7 @@ def create_app() -> Flask:
             force_https_callback=True,
             secure_session=True,
         )
-        add_public_routes(
-            app,
-            routes=[
-                "/api/indicator/add",
-                "/api/github_usage_report/add",
-                "/api/github_repository_metadata/add",
-            ],
-        )
+
         auth.register_provider(
             "idp",
             token_endpoint_auth_method="client_secret_post",
