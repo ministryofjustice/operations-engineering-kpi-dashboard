@@ -1,6 +1,6 @@
 import logging
 from dash import Dash, dcc, html
-from dash_auth import OIDCAuth, add_public_routes
+from dash_auth import OIDCAuth
 from flask import Flask
 
 from app.config.app_config import app_config
