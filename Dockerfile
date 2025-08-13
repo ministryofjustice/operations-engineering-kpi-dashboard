@@ -1,10 +1,10 @@
 FROM python:3.12.8-slim-bookworm
 
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y perl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+  apt-get upgrade -y && \
+  apt-get install -y perl && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 LABEL maintainer="operations-engineering <operations-engineering@digital.justice.gov.uk>"
 
@@ -15,7 +15,6 @@ WORKDIR /home/operations-engineering-kpi-dashboard
 COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 COPY app app
-COPY example-data data
 COPY data/production production
 
 RUN pip3 install --no-cache-dir pipenv==2024.4.0 && \
