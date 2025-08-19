@@ -56,18 +56,3 @@ You can then go to the UI to see graphs for the given data sets:
 | Name        |          URL          |
 | :---------- | :-------------------: |
 | Dash/Plotly | <http://localhost:4567> |
-
-#### ✌️ Grafana Locally
-
-As an alternative dashboarding option - you can chose to also spin up a Grafana Dashboard locally using the following command:
-
-```bash
-docker compose -f docker-compose-grafana.yaml up --build
-```
-
-You can then go to the following UIs to see graphs for the given data sets:
-
-| Name        |          URL          |
-| :---------- | :-------------------: |
-| Grafana     | <http://localhost:3000> |
-| Dash/Plotly | <http://localhost:4567> |
