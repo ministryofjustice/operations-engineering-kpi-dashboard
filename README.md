@@ -55,7 +55,7 @@ You can then go to the UI to see graphs for the given data sets:
 
 | Name        |          URL          |
 | :---------- | :-------------------: |
-| Dash/Plotly | http://localhost:4567 |
+| Dash/Plotly | <http://localhost:4567> |
 
 #### ✌️ Grafana Locally
 
@@ -69,5 +69,5 @@ You can then go to the following UIs to see graphs for the given data sets:
 
 | Name        |          URL          |
 | :---------- | :-------------------: |
-| Grafana     | http://localhost:3000 |
-| Dash/Plotly | http://localhost:4567 |
+| Grafana     | <http://localhost:3000> |
+| Dash/Plotly | <http://localhost:4567> |
