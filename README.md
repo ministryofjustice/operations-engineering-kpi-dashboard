@@ -16,8 +16,6 @@ The purpose of the KPI Dashboard is to enable Operations Engineering to easily t
 ├── data # 👈 Ignored by git - use this directory to store sensitive data you want to load locally (copy `example_data` for a starting point)
 │   └── support-stats.csv
 │   └── ...
-├── example-data # 👈 example data set, rename to data to so that app can use it
-└── grafana # 👈 Where all grafana configuration lives
 └── docker-compose.yaml
 ```
 
@@ -28,8 +26,6 @@ The current solution is composed of two components, the Dashboard UI and a Datab
 - UI
   - [Dash and Plotly](https://dash.plotly.com/tutorial) - for creating dashboards from data with no JavaScript 😱
     - [Pandas](https://pandas.pydata.org/pandas-docs/stable/index.html) - for reading in data from CSV, JSON, SQL etc. and converting it into a readable format by Dash/Plotly 🐼
-  - [Grafana](https://grafana.com/) UI Alternative - for creating dashboards from data 📊
-- Data Sources
   - [PostgresDB](https://www.postgresql.org/) - for storing data (that can be auto-populated by systems when/if this goes live 🙈)
   - CSV files - example CSV files stored in [example-data](./example-data/) though the application reads from [./data](./data) 💿
 
@@ -55,19 +51,4 @@ You can then go to the UI to see graphs for the given data sets:
 
 | Name        |          URL          |
 | :---------- | :-------------------: |
-| Dash/Plotly | http://localhost:4567 |
-
-#### ✌️ Grafana Locally
-
-As an alternative dashboarding option - you can chose to also spin up a Grafana Dashboard locally using the following command:
-
-```bash
-docker compose -f docker-compose-grafana.yaml up --build
-```
-
-You can then go to the following UIs to see graphs for the given data sets:
-
-| Name        |          URL          |
-| :---------- | :-------------------: |
-| Grafana     | http://localhost:3000 |
-| Dash/Plotly | http://localhost:4567 |
+| Dash/Plotly | <http://localhost:4567> |
